@@ -1,0 +1,14 @@
+logs/
+*.log
+
+configs/config.yaml
+configs/*.local.yaml
+
+bin/
+dist/
+coverage.out
+.gocache/
+.gomodcache/
+
+.env
+.env.*

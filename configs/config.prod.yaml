@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  mode: release
+
+mysql:
+  user: warspark
+  password: ""
+  host: 127.0.0.1
+  port: "3306"
+  db: warspark
+
+redis:
+  addr: 127.0.0.1
+  port: "6379"
+  password: ""
+  db: 0
+
+jwt:
+  secret: change-me-with-env
+  issuer: warspark
+
+log:
+  level: info
+  console:
+    enabled: true
+  file:
+    enabled: true
+    path: logs/warspark.log
+
+docs:
+  swagger_enabled: false

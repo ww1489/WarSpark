@@ -1,0 +1,59 @@
+basePath: /
+definitions:
+  utils.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Reusable Go REST API backend template.
+  title: WarSpark API
+  version: dev
+paths:
+  /api/v1/health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Liveness check
+      tags:
+      - system
+  /api/v1/ready:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Readiness check
+      tags:
+      - system
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Liveness check
+      tags:
+      - system
+schemes:
+- http
+swagger: "2.0"
