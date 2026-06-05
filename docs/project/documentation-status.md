@@ -31,18 +31,18 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 | `docs/product/mvp-scope.md` | 已完成 | P0 | 明确 MVP 做什么、不做什么、验收边界和推迟能力。 | `warspark-prd.md` |
 | `docs/product/user-flows.md` | 已完成 | P0 | 记录核心用户流程：截图找阵、战争目标找阵、找阵沉淀阵型库、复盘沉淀资料。 | `warspark-prd.md`, `mvp-scope.md` |
 | `docs/product/page-spec.md` | 已完成 | P0 | 页面级产品规格，定义页面模块、字段、按钮、空状态、错误状态。 | `user-flows.md` |
-| `docs/product/content-data-policy.md` | 已完成 | P0 | 定义外部内容和数据使用边界，包括用户上传、公开页面、OpenLayout、YouTube 时间戳、官方 API、授权导入。 | `warspark-prd.md` |
+| `docs/product/content-data-policy.md` | 已完成 | P0 | 定义外部内容和数据使用边界，包括匿名上传、公开页面、阵型链接、YouTube 时间戳、官方 API、授权导入。 | `warspark-prd.md` |
 | `docs/architecture/data-model.md` | 已完成 | P0 | 定义核心数据模型和实体关系，如阵型、图片、视频、匹配记录、搜索任务、战争快照。 | `mvp-scope.md`, `page-spec.md` |
 | `docs/project/implementation-roadmap.md` | 已完成 | P0 | 把 MVP 拆成开发阶段、交付物、验收标准和风险。 | `mvp-scope.md`, `data-model.md` |
 | `docs/architecture/system-architecture.md` | 已完成 | P1 | 定义后端模块、图片处理、缓存、异步任务、外部 API、存储和部署边界。 | `data-model.md`, `implementation-roadmap.md` |
 | `docs/architecture/features/image-search.md` | 已完成 | P1 | 定义截图找阵实现逻辑，包括上传任务、处理状态、候选匹配、低置信度和无结果。 | `system-architecture.md`, `mvp-scope.md`, `data-model.md` |
-| `docs/architecture/features/layout-library.md` | 已完成 | P1 | 定义轻量阵型库实现逻辑，包括阵型入库、列表筛选、详情页、OpenLayout 状态。 | `system-architecture.md`, `page-spec.md`, `data-model.md` |
+| `docs/architecture/features/layout-library.md` | 已完成 | P1 | 定义轻量阵型库实现逻辑，包括阵型入库、列表筛选、详情页、阵型链接状态。 | `system-architecture.md`, `page-spec.md`, `data-model.md` |
 | `docs/architecture/features/video-association.md` | 已完成 | P1 | 定义相关攻击视频和防守回放关联逻辑，包括时间戳、关联类型、失效状态。 | `system-architecture.md`, `content-data-policy.md`, `data-model.md` |
 | `docs/architecture/features/war-data.md` | 已完成 | P1 | 定义战争数据接入逻辑，包括官方 API、缓存、错误状态、目标上下文绑定。 | `system-architecture.md`, `data-model.md` |
 | `docs/architecture/features/review-and-ingestion.md` | 已完成 | P1 | 定义内容入库和审核逻辑，包括公开来源、授权导入、质量状态、链接状态。 | `content-data-policy.md`, `data-model.md` |
 | `docs/api/api-contract.md` | 已完成 | P1 | 定义前后端 API 契约，包括上传截图、查询结果、阵型库、视频、战争数据。 | `page-spec.md`, `data-model.md`, `features/*` |
 | `docs/qa/acceptance-checklist.md` | 已完成 | P1 | 定义功能验收清单，确保开发结果和产品目标一致。 | `page-spec.md`, `api-contract.md` |
-| `docs/ops/content-operations.md` | 已完成 | P1 | 定义阵型图片、OpenLayout、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `review-and-ingestion.md` |
+| `docs/ops/content-operations.md` | 已完成 | P1 | 定义阵型图片、阵型链接、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `review-and-ingestion.md` |
 | `docs/design.md` | 模板既有 | P2 | GinSpark 模板架构设计说明，当前主要用于理解后端模板结构。 | 无 |
 | `docs/template-spec.md` | 模板既有 | P2 | GinSpark 模板规格说明，后续可替换为 WarSpark 工程规范。 | 无 |
 | `docs/AI_DEVELOPMENT.md` | 模板既有 | P2 | AI 辅助开发说明，后续可按 WarSpark 工作流更新。 | 无 |
@@ -59,7 +59,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 需要回答：
 
 - MVP 的核心目标是什么。
-- 截图找阵、轻量阵型库、相关视频、防守回放、战争数据预留分别做到什么程度。
+- 截图找阵、轻量阵型库、相关视频、防守回放、首轮战争数据分别做到什么程度。
 - 哪些功能明确不做：登录、收藏、付费、完整 War Report、多端 App、完整视频帧索引、自动配兵识别、AI 打法推荐。
 - 每个模块的验收标准是什么。
 
@@ -110,7 +110,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 
 需要回答：
 
-- 哪些数据可以使用：用户上传、公开阵型页面、OpenLayout、官方 CoC API、用户授权导入、人工整理。
+- 哪些数据可以使用：匿名用户上传、公开阵型页面、阵型链接、官方 CoC API、用户授权导入、内部后台维护。
 - 哪些数据不默认使用：私有 Discord / Telegram 抓取、登录绕过、付费内容绕过、YouTube 视频下载、游戏客户端自动化。
 - 阵型图片、链接、视频时间戳如何记录来源和审核状态。
 
@@ -132,7 +132,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 
 - `base_layouts`：阵型主表。
 - `layout_images`：阵型图片。
-- `layout_links`：OpenLayout 和其他复制链接。
+- `layout_links`：官方游戏打开链接、来源页面链接和备用阵型链接。
 - `videos`：YouTube 视频记录。
 - `layout_video_matches`：阵型和视频的关联。
 - `image_search_jobs`：截图找阵任务。
@@ -153,10 +153,10 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 建议阶段：
 
 - Phase 0：产品文档和数据模型。
-- Phase 1：轻量阵型库和人工样本数据。
-- Phase 2：截图上传和找阵结果页。
+- Phase 1：基础数据模型、轻量阵型库和内部后台骨架。
+- Phase 2：官方战争 API、截图上传和自动找阵结果页。
 - Phase 3：相关视频和防守回放关联。
-- Phase 4：战争数据基础接入。
+- Phase 4：战争情报增强和复盘入口。
 - Phase 5：复盘和资料沉淀。
 
 完成标准：
@@ -193,7 +193,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 
 路径：`docs/architecture/features/layout-library.md`
 
-用于说明轻量阵型库的实现逻辑，包括阵型入库、审核状态、OpenLayout 状态、列表筛选、详情页和找阵结果关联。
+用于说明轻量阵型库的实现逻辑，包括阵型入库、审核状态、阵型链接状态、列表筛选、详情页和找阵结果关联。
 
 完成时机：
 
@@ -220,7 +220,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 完成时机：
 
 - 可以在 MVP 找阵和阵型库技术设计之后完成。
-- 在实现 V1 战争情报页之前完成。
+- 在实现战争情报页、战争目标上下文和官方 API 缓存前完成。
 
 ### 6.6 入库与审核技术设计
 
@@ -296,7 +296,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 
 ## 9. 当前完成情况
 
-截至 2026-06-05：
+截至 2026-06-06：
 
 - 已完成：WarSpark 总版 PRD。
 - 已完成：项目文档说明与完成状态。

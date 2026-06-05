@@ -10,7 +10,7 @@
 
 - 找阵任务、阵型、图片、链接、视频、战争数据分开建模。
 - 所有外部内容都记录来源、审核状态、质量状态和可用状态。
-- MVP 字段和后续预留字段明确区分。
+- MVP 字段和后续预留字段明确区分；战争数据、内部管理后台和自动化处理进入 MVP。
 - 找阵流程不依赖战争数据，但可以绑定战争目标上下文。
 - 阵型库是可浏览资产，不只是内部匹配表。
 - 视频是参考证据，不表示系统推荐打法。
@@ -28,6 +28,8 @@ erDiagram
     image_search_jobs }o--o| war_targets : binds
     war_snapshots ||--o{ war_targets : has
     war_snapshots ||--o{ war_members : has
+    import_batches ||--o{ base_layouts : creates
+    import_batches ||--o{ videos : creates
 ```
 
 ## 4. 通用枚举
@@ -42,6 +44,7 @@ erDiagram
 | `authorized_import` | 用户授权导入。 |
 | `manual_entry` | 人工录入。 |
 | `search_result` | 找阵结果沉淀。 |
+| `automated_pipeline` | 自动处理流水线生成。 |
 
 ### 4.2 审核状态 `review_status`
 
@@ -80,6 +83,14 @@ erDiagram
 | `low_confidence` | 有候选但可信度低。 |
 | `no_result` | 无候选结果。 |
 | `failed` | 处理失败。 |
+
+### 4.6 链接类型 `link_type`
+
+| 值 | 含义 |
+| --- | --- |
+| `official_open_layout` | `link.clashofclans.com` 等官方游戏打开链接，用户侧展示为打开阵型或复制阵型链接。 |
+| `source_page` | 公开阵型站、视频说明或整理页面，只作为来源页面。 |
+| `backup` | 备用阵型链接或备用来源。 |
 
 ## 5. `base_layouts` 阵型主表
 
@@ -161,7 +172,7 @@ MVP 字段：
 
 职责：
 
-- 保存 OpenLayout 和后续可能支持的官方复制链接、备用链接。
+- 保存官方游戏打开链接、来源页面和备用链接。
 
 MVP 字段：
 
@@ -169,17 +180,18 @@ MVP 字段：
 | --- | --- | --- |
 | `id` | string / uuid | 链接 ID。 |
 | `layout_id` | string / uuid | 关联阵型。 |
-| `link_type` | string | `open_layout`、`official_copy`、`backup`。 |
+| `link_type` | enum | `official_open_layout`、`source_page`、`backup`。 |
 | `url` | string | 链接地址。 |
 | `link_status` | enum | 链接状态。 |
 | `source_type` | enum | 来源类型。 |
 | `source_url` | string nullable | 来源页面。 |
 | `last_checked_at` | datetime nullable | 最后验证时间。 |
+| `last_check_error` | string nullable | 最后检查失败原因。 |
 | `created_at` | datetime | 创建时间。 |
 
 约束：
 
-- MVP 至少支持 `open_layout`。
+- MVP 至少支持 `official_open_layout` 和 `source_page`。
 - `broken` 状态的链接不得展示可复制动作。
 - 同一个阵型可以没有可用链接。
 
@@ -264,6 +276,9 @@ MVP 字段：
 | `detected_th` | int nullable | 识别 TH。 |
 | `screenshot_quality` | string nullable | 截图质量。 |
 | `buildings_detected` | int nullable | 可见建筑数量。 |
+| `upload_ip_hash` | string nullable | 匿名上传 IP 哈希，用于限流和审计。 |
+| `original_retention_until` | datetime nullable | 原始上传图默认保留到期时间。 |
+| `processing_mode` | string | `auto`、`manual_review`。 |
 | `error_code` | string nullable | 错误码。 |
 | `error_message` | string nullable | 错误信息。 |
 | `target_context` | json nullable | 战争目标上下文。 |
@@ -281,6 +296,8 @@ MVP 字段：
 
 - 找阵任务可以没有战争目标上下文。
 - 失败状态必须保留错误信息。
+- 匿名上传只保存脱敏标识，不建用户账号。
+- 原始上传图默认保留 7 天，沉淀图片需经过自动质量门槛或后台审核。
 
 ## 11. `image_search_results` 找阵结果表
 
@@ -311,10 +328,10 @@ MVP 字段：
 
 职责：
 
-- 保存某次官方 API 或样例数据返回的战争状态。
-- MVP 只预留，V1 完整使用。
+- 保存某次 Clash of Clans 官方 API 返回的战争状态。
+- MVP 直接用于战争情报页和找阵目标上下文。
 
-V1 字段：
+MVP 字段：
 
 | 字段 | 类型建议 | 说明 |
 | --- | --- | --- |
@@ -329,11 +346,13 @@ V1 字段：
 | `opponent_destruction` | decimal nullable | 敌方摧毁率。 |
 | `source_type` | enum | 通常为 `official_api`。 |
 | `fetched_at` | datetime | 获取时间。 |
+| `api_error_code` | string nullable | 官方 API 错误码。 |
+| `api_error_message` | string nullable | 官方 API 错误说明。 |
 
 约束：
 
-- 官方 API 不可用时不阻塞找阵。
-- 快照数据用于上下文，不作为 MVP 找阵依赖。
+- 官方 API 不可用时不阻塞独立找阵。
+- 快照数据用于战争情报、目标上下文和复盘入口。
 
 ## 13. `war_members` 战争成员表
 
@@ -341,7 +360,7 @@ V1 字段：
 
 - 保存战争快照中的成员状态。
 
-V1 字段：
+MVP 字段：
 
 | 字段 | 类型建议 | 说明 |
 | --- | --- | --- |
@@ -361,9 +380,9 @@ V1 字段：
 职责：
 
 - 连接战争目标和找阵任务。
-- MVP 可以用 JSON 预留，V1 可以独立成表。
+- MVP 独立成表，也可在 `image_search_jobs.target_context` 保存快照冗余字段。
 
-V1 字段：
+MVP 字段：
 
 | 字段 | 类型建议 | 说明 |
 | --- | --- | --- |
@@ -376,42 +395,86 @@ V1 字段：
 | `target_th` | int nullable | 敌方 TH。 |
 | `created_at` | datetime | 创建时间。 |
 
-## 15. MVP 数据闭环
+## 15. `import_batches` 导入批次表
+
+职责：
+
+- 保存公开来源、授权导入和后台批量导入的批次记录。
+- 支撑内部管理后台查看导入状态、错误行和处理结果。
+
+MVP 字段：
+
+| 字段 | 类型建议 | 说明 |
+| --- | --- | --- |
+| `id` | string / uuid | 导入批次 ID。 |
+| `source_type` | enum | 来源类型。 |
+| `source_url` | string nullable | 来源页面或授权来源。 |
+| `file_url` | string nullable | 导入文件地址。 |
+| `import_status` | string | `created`、`processing`、`completed`、`failed`。 |
+| `total_rows` | int nullable | 总记录数。 |
+| `success_rows` | int nullable | 成功记录数。 |
+| `failed_rows` | int nullable | 失败记录数。 |
+| `error_summary` | string nullable | 错误摘要。 |
+| `created_at` | datetime | 创建时间。 |
+| `updated_at` | datetime | 更新时间。 |
+
+## 16. `admin_audit_logs` 后台审计表
+
+职责：
+
+- 保存内部后台写操作记录。
+- 用于追踪阵型、图片、链接、视频时间戳和审核状态变更。
+
+MVP 字段：
+
+| 字段 | 类型建议 | 说明 |
+| --- | --- | --- |
+| `id` | string / uuid | 审计记录 ID。 |
+| `admin_id` | string / uuid nullable | 管理员 ID，首版可为空或使用内部账号标识。 |
+| `resource_type` | string | 资源类型。 |
+| `resource_id` | string / uuid | 资源 ID。 |
+| `action` | string | 操作类型。 |
+| `before_snapshot` | json nullable | 变更前快照。 |
+| `after_snapshot` | json nullable | 变更后快照。 |
+| `created_at` | datetime | 创建时间。 |
+
+## 17. MVP 数据闭环
 
 MVP 需要支持以下闭环：
 
 1. 用户上传截图，生成 `layout_images` 和 `image_search_jobs`。
 2. 找阵任务返回候选，生成 `image_search_results`。
 3. 候选阵型关联 `base_layouts`。
-4. 阵型展示主图和 OpenLayout，依赖 `layout_images` 和 `layout_links`。
+4. 阵型展示主图和阵型链接，依赖 `layout_images` 和 `layout_links`。
 5. 阵型关联视频，依赖 `videos` 和 `layout_video_matches`。
-6. 找阵结果可沉淀为新的 `base_layouts`。
+6. 官方 API 写入 `war_snapshots`、`war_members`、`war_targets`，并绑定找阵任务。
+7. 找阵结果可自动沉淀为新的 `base_layouts` 草稿。
+8. 内部后台处理低置信度、冲突、失效和异常内容。
 
-## 16. 后续版本预留
+## 18. 后续版本预留
 
-V1 战争数据接入：
+V1 战争情报增强：
 
-- 使用 `war_snapshots`。
-- 使用 `war_members`。
-- 使用 `war_targets`。
-- 找阵任务绑定战争目标。
+- 增强历史战争查询。
+- 增强 CWL 轮次视图。
+- 增强目标筛选和风险排序。
 
 V2 复盘资料沉淀：
 
 - 增强战争攻击记录。
 - 增强防守表现统计。
 - 增强阵型和视频关联。
-- 增加人工审核和内容运营流程。
+- 增强审核和内容运营流程。
 
 暂不建模：
 
-- 用户账号。
+- 用户侧账号。
 - 收藏、点赞、评论。
 - 支付、订单、会员。
 - 自动配兵识别。
 - AI 打法推荐。
 
-## 17. 验收标准
+## 19. 验收标准
 
 数据模型文档视为完成时，需要满足：
 

@@ -2,7 +2,7 @@
 
 ## 1. 文档目的
 
-本文档定义 WarSpark MVP 和 V1 的前后端 API 契约草案，覆盖截图找阵、找阵结果、阵型库、视频关联、战争数据和内容入库相关接口。
+本文档定义 WarSpark MVP 的前后端 API 契约草案，覆盖截图找阵、找阵结果、阵型库、视频关联、战争数据、内容入库和内部后台管理接口。
 
 本文档用于开发前对齐，不代表接口已经实现。后续如果接口字段变化，需要同步更新本文档、Swagger 和相关页面规格。
 
@@ -61,7 +61,10 @@
 
 ### 2.5 认证
 
-MVP 前台接口默认匿名可用。运营、导入、审核类接口先在文档中预留，实际实现时需要再接入鉴权。
+- 前台找阵、阵型库、视频和战争情报读取接口默认匿名可用。
+- 匿名上传接口必须做文件校验、限流和滥用保护。
+- 内部 admin API 必须接入后台鉴权，不暴露为匿名写接口。
+- Clash of Clans 官方 API Key 只保存在服务端，不返回前端。
 
 ## 3. 通用枚举
 
@@ -94,7 +97,15 @@ low_confidence
 unknown
 ```
 
-### 3.4 链接状态
+### 3.4 链接类型
+
+```text
+official_open_layout
+source_page
+backup
+```
+
+### 3.5 链接状态
 
 ```text
 active
@@ -103,19 +114,31 @@ unverified
 missing
 ```
 
-### 3.5 视频关联分组
+### 3.6 视频关联分组
 
 ```text
 attack_video
 defense_replay
 ```
 
-### 3.6 视频关联精度
+### 3.7 视频关联精度
 
 ```text
 exact
 similar
 same_th
+```
+
+### 3.8 来源类型
+
+```text
+user_upload
+public_page
+official_api
+authorized_import
+automated_pipeline
+manual_entry
+search_result
 ```
 
 ## 4. 错误码建议
@@ -133,7 +156,9 @@ same_th
 | `30004` | 图片存储失败。 |
 | `30005` | 找阵处理失败。 |
 | `30006` | 匹配服务不可用。 |
-| `31001` | OpenLayout 链接不可用。 |
+| `30007` | 图片尺寸过小。 |
+| `30008` | 匿名上传过于频繁。 |
+| `31001` | 阵型链接不可用。 |
 | `32001` | YouTube 视频不可访问。 |
 | `33001` | 官方 API 未配置。 |
 | `33002` | 官方 API 请求失败。 |
@@ -159,6 +184,15 @@ Content-Type: multipart/form-data
 | `expected_th` | int | 否 | 用户或战争上下文预期 TH。 |
 | `war_target_id` | string | 否 | 战争目标 ID。 |
 
+上传约束：
+
+- 仅允许 `jpg`、`jpeg`、`png`、`webp`。
+- 单张图片最大 10MB。
+- 图片最短边不低于 512px。
+- 服务端移除 EXIF。
+- 服务端生成标准化图片，最长边不超过 4096px。
+- 匿名上传按 IP 或等效匿名标识限流。
+
 成功响应：
 
 ```json
@@ -170,7 +204,11 @@ Content-Type: multipart/form-data
     "search_status": "created",
     "uploaded_image": {
       "image_id": "img_123",
-      "image_url": "https://storage.example/uploads/job_123.png"
+      "image_url": "https://storage.example/uploads/job_123.png",
+      "width": 1440,
+      "height": 1440,
+      "normalized": true,
+      "raw_retention_days": 7
     },
     "created_at": "2026-06-05T12:00:00+08:00"
   }
@@ -195,6 +233,7 @@ GET /api/v1/image-search/jobs/{job_id}
 | `error_code` | string nullable | 失败错误码。 |
 | `error_message` | string nullable | 失败说明。 |
 | `target_context` | object nullable | 战争目标上下文。 |
+| `review_queue_id` | string nullable | 进入后台复核队列时返回。 |
 
 ### 5.3 查询找阵结果
 
@@ -319,7 +358,7 @@ GET /api/v1/layouts/{layout_id}
 ```json
 {
   "link_id": "link_123",
-  "link_type": "open_layout",
+  "link_type": "official_open_layout",
   "url": "https://link.clashofclans.com/example",
   "link_status": "active",
   "last_checked_at": "2026-06-05T12:00:00+08:00"
@@ -386,11 +425,33 @@ POST /api/v1/videos/{video_id}/report-broken
 说明：
 
 - MVP 可先记录反馈，不必立即自动隐藏视频。
-- 运营或 Worker 后续更新视频状态。
+- Worker 或后台后续更新视频状态。
 
 ## 8. 战争数据接口
 
-### 8.1 查询战争概览
+### 8.1 查询部落概览
+
+```text
+GET /api/v1/clans/{clan_tag}
+```
+
+用途：
+
+- 查询部落名称、等级、成员数、标签和基础状态。
+- 当前战争不可访问时仍可展示基础信息。
+
+### 8.2 查询玩家概览
+
+```text
+GET /api/v1/players/{player_tag}
+```
+
+用途：
+
+- 查询玩家名称、TH、所属部落和基础信息。
+- 支持从玩家 tag 反查可能的战争上下文。
+
+### 8.3 查询当前战争
 
 ```text
 GET /api/v1/war/current?clan_tag={clan_tag}
@@ -420,7 +481,18 @@ GET /api/v1/war/current?clan_tag={clan_tag}
 - 无当前战争。
 - 官方 API 请求失败。
 
-### 8.2 查询战争成员
+### 8.4 查询 CWL 基础结构
+
+```text
+GET /api/v1/war/cwl?clan_tag={clan_tag}&season=2026-06
+```
+
+用途：
+
+- 获取 CWL 分组、轮次和参与成员的基础结构。
+- MVP 只做基础展示，不做完整历史分析。
+
+### 8.5 查询战争成员
 
 ```text
 GET /api/v1/war/snapshots/{war_snapshot_id}/members
@@ -448,7 +520,7 @@ GET /api/v1/war/snapshots/{war_snapshot_id}/members
 }
 ```
 
-### 8.3 创建目标找阵任务
+### 8.6 创建目标找阵任务
 
 ```text
 POST /api/v1/war/targets/{target_id}/image-search-jobs
@@ -465,11 +537,27 @@ Content-Type: multipart/form-data
 - 如果战争目标不存在，返回资源不存在。
 - 如果官方 API 不可用，但已有快照和目标存在，仍可创建找阵任务。
 
-## 9. 内容入库与运营预留接口
+## 9. 内部 Admin API
 
-以下接口不进入匿名前台 MVP，作为运营或内部能力预留。
+以下接口属于 MVP 内部后台能力，必须鉴权，不进入匿名前台写接口。
 
-### 9.1 创建阵型草稿
+### 9.1 查询后台复核队列
+
+```text
+GET /api/v1/admin/review-queue
+```
+
+查询参数：
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `resource_type` | string | `layout`、`image_search_job`、`layout_link`、`video_match`。 |
+| `review_status` | string | 审核状态。 |
+| `quality_status` | string | 质量状态。 |
+| `page` | int | 页码。 |
+| `page_size` | int | 每页数量。 |
+
+### 9.2 创建阵型草稿
 
 ```text
 POST /api/v1/admin/layouts
@@ -491,7 +579,7 @@ POST /api/v1/admin/layouts
 }
 ```
 
-### 9.2 添加阵型链接
+### 9.3 添加阵型链接
 
 ```text
 POST /api/v1/admin/layouts/{layout_id}/links
@@ -501,14 +589,14 @@ POST /api/v1/admin/layouts/{layout_id}/links
 
 ```json
 {
-  "link_type": "open_layout",
+  "link_type": "official_open_layout",
   "url": "https://link.clashofclans.com/example",
   "source_type": "manual_entry",
   "source_url": "https://example.com/source"
 }
 ```
 
-### 9.3 添加视频关联
+### 9.4 添加视频关联
 
 ```text
 POST /api/v1/admin/layouts/{layout_id}/video-matches
@@ -532,7 +620,7 @@ POST /api/v1/admin/layouts/{layout_id}/video-matches
 }
 ```
 
-### 9.4 更新审核状态
+### 9.5 更新审核状态
 
 ```text
 PATCH /api/v1/admin/review/{resource_type}/{resource_id}
@@ -548,6 +636,33 @@ PATCH /api/v1/admin/review/{resource_type}/{resource_id}
   "note": "source checked"
 }
 ```
+
+### 9.6 更新链接状态
+
+```text
+PATCH /api/v1/admin/layout-links/{link_id}
+```
+
+请求：
+
+```json
+{
+  "link_status": "broken",
+  "last_checked_at": "2026-06-05T12:00:00+08:00",
+  "note": "cannot open"
+}
+```
+
+### 9.7 查询后台操作日志
+
+```text
+GET /api/v1/admin/audit-logs
+```
+
+用途：
+
+- 追踪阵型、链接、视频关联和复核状态的后台修改记录。
+- 支撑后续问题回溯。
 
 ## 10. 前端状态映射
 
@@ -567,9 +682,10 @@ PATCH /api/v1/admin/review/{resource_type}/{resource_id}
 API 契约视为可进入实现时，需要满足：
 
 - 截图上传、任务状态、结果查询接口完整。
-- 找阵结果能聚合阵型、进攻视频、防守回放和 OpenLayout 状态。
+- 匿名上传限制、EXIF 清理、尺寸约束和限流要求明确。
+- 找阵结果能聚合阵型、进攻视频、防守回放和阵型链接状态。
 - 阵型列表和详情接口覆盖页面规格字段。
 - 视频接口明确分组和关联精度。
-- 战争数据接口与找阵任务解耦。
-- 内容运营接口作为内部预留，不混入匿名前台 MVP。
+- 战争数据接口覆盖部落、玩家、当前战争、CWL 基础结构和目标绑定。
+- 内部 admin API 明确需要鉴权，覆盖复核队列、阵型、链接、视频关联和操作日志。
 - 响应结构与 GinSpark 模板保持一致。
