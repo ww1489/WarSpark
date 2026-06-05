@@ -30,7 +30,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 | `docs/project/documentation-status.md` | 已完成 | P0 | 记录项目需要哪些文档、每份文档的说明和完成情况。 | `warspark-prd.md` |
 | `docs/product/mvp-scope.md` | 已完成 | P0 | 明确 MVP 做什么、不做什么、验收边界和推迟能力。 | `warspark-prd.md` |
 | `docs/product/user-flows.md` | 已完成 | P0 | 记录核心用户流程：截图找阵、战争目标找阵、找阵沉淀阵型库、复盘沉淀资料。 | `warspark-prd.md`, `mvp-scope.md` |
-| `docs/product/page-spec.md` | 待编写 | P0 | 页面级产品规格，定义页面模块、字段、按钮、空状态、错误状态。 | `user-flows.md` |
+| `docs/product/page-spec.md` | 已完成 | P0 | 页面级产品规格，定义页面模块、字段、按钮、空状态、错误状态。 | `user-flows.md` |
 | `docs/product/content-data-policy.md` | 待编写 | P0 | 定义外部内容和数据使用边界，包括用户上传、公开页面、OpenLayout、YouTube 时间戳、官方 API、授权导入。 | `warspark-prd.md` |
 | `docs/architecture/data-model.md` | 待编写 | P0 | 定义核心数据模型和实体关系，如阵型、图片、视频、匹配记录、搜索任务、战争快照。 | `mvp-scope.md`, `page-spec.md` |
 | `docs/project/implementation-roadmap.md` | 待编写 | P0 | 把 MVP 拆成开发阶段、交付物、验收标准和风险。 | `mvp-scope.md`, `data-model.md` |
@@ -214,7 +214,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 - 已完成：项目文档说明与完成状态。
 - 已完成：MVP 范围文档。
 - 已完成：用户流程文档。
-- 待编写：页面规格文档。
+- 已完成：页面规格文档。
 - 待编写：内容与数据边界文档。
 - 待编写：数据模型文档。
 - 待编写：实施路线图。
