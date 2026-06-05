@@ -34,7 +34,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 | `docs/product/content-data-policy.md` | 已完成 | P0 | 定义外部内容和数据使用边界，包括用户上传、公开页面、OpenLayout、YouTube 时间戳、官方 API、授权导入。 | `warspark-prd.md` |
 | `docs/architecture/data-model.md` | 已完成 | P0 | 定义核心数据模型和实体关系，如阵型、图片、视频、匹配记录、搜索任务、战争快照。 | `mvp-scope.md`, `page-spec.md` |
 | `docs/project/implementation-roadmap.md` | 已完成 | P0 | 把 MVP 拆成开发阶段、交付物、验收标准和风险。 | `mvp-scope.md`, `data-model.md` |
-| `docs/architecture/system-architecture.md` | 待编写 | P1 | 定义后端模块、图片处理、缓存、异步任务、外部 API、存储和部署边界。 | `data-model.md`, `implementation-roadmap.md` |
+| `docs/architecture/system-architecture.md` | 已完成 | P1 | 定义后端模块、图片处理、缓存、异步任务、外部 API、存储和部署边界。 | `data-model.md`, `implementation-roadmap.md` |
 | `docs/architecture/features/image-search.md` | 待编写 | P1 | 定义截图找阵实现逻辑，包括上传任务、处理状态、候选匹配、低置信度和无结果。 | `system-architecture.md`, `mvp-scope.md`, `data-model.md` |
 | `docs/architecture/features/layout-library.md` | 待编写 | P1 | 定义轻量阵型库实现逻辑，包括阵型入库、列表筛选、详情页、OpenLayout 状态。 | `system-architecture.md`, `page-spec.md`, `data-model.md` |
 | `docs/architecture/features/video-association.md` | 待编写 | P1 | 定义相关攻击视频和防守回放关联逻辑，包括时间戳、关联类型、失效状态。 | `system-architecture.md`, `content-data-policy.md`, `data-model.md` |
@@ -306,6 +306,6 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 - 已完成：内容与数据边界文档。
 - 已完成：数据模型文档。
 - 已完成：实施路线图。
-- 待编写：系统架构。
+- 已完成：系统架构。
 - 待编写：功能技术设计文档组。
 - 后续补充：API 契约、验收清单、内容运营流程。
