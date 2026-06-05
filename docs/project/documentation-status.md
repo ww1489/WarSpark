@@ -42,7 +42,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 | `docs/architecture/features/review-and-ingestion.md` | 已完成 | P1 | 定义内容入库和审核逻辑，包括公开来源、授权导入、质量状态、链接状态。 | `content-data-policy.md`, `data-model.md` |
 | `docs/api/api-contract.md` | 已完成 | P1 | 定义前后端 API 契约，包括上传截图、查询结果、阵型库、视频、战争数据。 | `page-spec.md`, `data-model.md`, `features/*` |
 | `docs/qa/acceptance-checklist.md` | 已完成 | P1 | 定义功能验收清单，确保开发结果和产品目标一致。 | `page-spec.md`, `api-contract.md` |
-| `docs/ops/content-operations.md` | 后续补充 | P1 | 定义阵型图片、OpenLayout、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `review-and-ingestion.md` |
+| `docs/ops/content-operations.md` | 已完成 | P1 | 定义阵型图片、OpenLayout、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `review-and-ingestion.md` |
 | `docs/design.md` | 模板既有 | P2 | GinSpark 模板架构设计说明，当前主要用于理解后端模板结构。 | 无 |
 | `docs/template-spec.md` | 模板既有 | P2 | GinSpark 模板规格说明，后续可替换为 WarSpark 工程规范。 | 无 |
 | `docs/AI_DEVELOPMENT.md` | 模板既有 | P2 | AI 辅助开发说明，后续可按 WarSpark 工作流更新。 | 无 |
