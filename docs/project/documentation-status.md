@@ -34,10 +34,15 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 | `docs/product/content-data-policy.md` | 已完成 | P0 | 定义外部内容和数据使用边界，包括用户上传、公开页面、OpenLayout、YouTube 时间戳、官方 API、授权导入。 | `warspark-prd.md` |
 | `docs/architecture/data-model.md` | 已完成 | P0 | 定义核心数据模型和实体关系，如阵型、图片、视频、匹配记录、搜索任务、战争快照。 | `mvp-scope.md`, `page-spec.md` |
 | `docs/project/implementation-roadmap.md` | 已完成 | P0 | 把 MVP 拆成开发阶段、交付物、验收标准和风险。 | `mvp-scope.md`, `data-model.md` |
-| `docs/architecture/system-architecture.md` | 后续补充 | P1 | 定义后端模块、图片处理、缓存、异步任务、外部 API、存储和部署边界。 | `data-model.md`, `implementation-roadmap.md` |
-| `docs/api/api-contract.md` | 后续补充 | P1 | 定义前后端 API 契约，包括上传截图、查询结果、阵型库、视频、战争数据。 | `page-spec.md`, `data-model.md` |
+| `docs/architecture/system-architecture.md` | 待编写 | P1 | 定义后端模块、图片处理、缓存、异步任务、外部 API、存储和部署边界。 | `data-model.md`, `implementation-roadmap.md` |
+| `docs/architecture/features/image-search.md` | 待编写 | P1 | 定义截图找阵实现逻辑，包括上传任务、处理状态、候选匹配、低置信度和无结果。 | `system-architecture.md`, `mvp-scope.md`, `data-model.md` |
+| `docs/architecture/features/layout-library.md` | 待编写 | P1 | 定义轻量阵型库实现逻辑，包括阵型入库、列表筛选、详情页、OpenLayout 状态。 | `system-architecture.md`, `page-spec.md`, `data-model.md` |
+| `docs/architecture/features/video-association.md` | 待编写 | P1 | 定义相关攻击视频和防守回放关联逻辑，包括时间戳、关联类型、失效状态。 | `system-architecture.md`, `content-data-policy.md`, `data-model.md` |
+| `docs/architecture/features/war-data.md` | 待编写 | P1 | 定义战争数据接入逻辑，包括官方 API、缓存、错误状态、目标上下文绑定。 | `system-architecture.md`, `data-model.md` |
+| `docs/architecture/features/review-and-ingestion.md` | 待编写 | P1 | 定义内容入库和审核逻辑，包括公开来源、授权导入、质量状态、链接状态。 | `content-data-policy.md`, `data-model.md` |
+| `docs/api/api-contract.md` | 后续补充 | P1 | 定义前后端 API 契约，包括上传截图、查询结果、阵型库、视频、战争数据。 | `page-spec.md`, `data-model.md`, `features/*` |
 | `docs/qa/acceptance-checklist.md` | 后续补充 | P1 | 定义功能验收清单，确保开发结果和产品目标一致。 | `page-spec.md`, `api-contract.md` |
-| `docs/ops/content-operations.md` | 后续补充 | P1 | 定义阵型图片、OpenLayout、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `data-model.md` |
+| `docs/ops/content-operations.md` | 后续补充 | P1 | 定义阵型图片、OpenLayout、视频时间戳、失效链接和审核状态的运营流程。 | `content-data-policy.md`, `review-and-ingestion.md` |
 | `docs/design.md` | 模板既有 | P2 | GinSpark 模板架构设计说明，当前主要用于理解后端模板结构。 | 无 |
 | `docs/template-spec.md` | 模板既有 | P2 | GinSpark 模板规格说明，后续可替换为 WarSpark 工程规范。 | 无 |
 | `docs/AI_DEVELOPMENT.md` | 模板既有 | P2 | AI 辅助开发说明，后续可按 WarSpark 工作流更新。 | 无 |
@@ -160,7 +165,7 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 - 每个阶段都有验收标准。
 - 每个阶段列出主要风险和不做事项。
 
-## 6. 后续补充文档
+## 6. 开发前技术设计文档
 
 ### 6.1 系统架构文档
 
@@ -168,25 +173,101 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 
 用于说明后端模块、图片上传处理、对象存储、数据库、缓存、异步任务、外部 API 和部署方式。
 
-### 6.2 API 契约文档
+完成时机：
+
+- 在所有功能技术设计文档之前完成。
+- 作为后续 `features/*` 文档的上层架构约束。
+
+### 6.2 截图找阵技术设计
+
+路径：`docs/architecture/features/image-search.md`
+
+用于说明截图找阵的实现逻辑，包括上传、任务状态、TH 识别、候选匹配、低置信度、无结果、失败重试和结果沉淀。
+
+完成时机：
+
+- 在 `system-architecture.md` 之后完成。
+- 在实现截图上传、找阵任务和找阵结果页之前完成。
+
+### 6.3 阵型库技术设计
+
+路径：`docs/architecture/features/layout-library.md`
+
+用于说明轻量阵型库的实现逻辑，包括阵型入库、审核状态、OpenLayout 状态、列表筛选、详情页和找阵结果关联。
+
+完成时机：
+
+- 在 `system-architecture.md` 之后完成。
+- 在实现阵型库列表页和阵型详情页之前完成。
+
+### 6.4 视频关联技术设计
+
+路径：`docs/architecture/features/video-association.md`
+
+用于说明相关攻击视频和防守回放的关联逻辑，包括 YouTube 时间戳、精确关联、相似参考、同 TH 参考、视频失效和无视频状态。
+
+完成时机：
+
+- 在 `image-search.md` 和 `layout-library.md` 之后完成。
+- 在实现找阵结果页的视频分组之前完成。
+
+### 6.5 战争数据技术设计
+
+路径：`docs/architecture/features/war-data.md`
+
+用于说明战争数据接入逻辑，包括 Clash of Clans 官方 API、缓存、错误状态、战争快照、成员数据和目标上下文绑定。
+
+完成时机：
+
+- 可以在 MVP 找阵和阵型库技术设计之后完成。
+- 在实现 V1 战争情报页之前完成。
+
+### 6.6 入库与审核技术设计
+
+路径：`docs/architecture/features/review-and-ingestion.md`
+
+用于说明内容入库、来源记录、审核状态、质量状态、链接状态、公开页面整理和授权导入的技术逻辑。
+
+完成时机：
+
+- 在 `content-data-policy.md` 和 `data-model.md` 之后完成。
+- 在实现内容导入、审核或运营流程之前完成。
+
+## 7. 后续接口、验收与运营文档
+
+### 7.1 API 契约文档
 
 路径：`docs/api/api-contract.md`
 
 用于定义前后端接口，不依赖口头约定推进开发。
 
-### 6.3 验收清单
+完成时机：
+
+- 在 `system-architecture.md` 和核心 `features/*` 文档完成后编写。
+- 不应早于功能技术设计，否则接口容易反复改。
+
+### 7.2 验收清单
 
 路径：`docs/qa/acceptance-checklist.md`
 
 用于在每个阶段结束时检查功能是否真正达到产品要求。
 
-### 6.4 内容运营文档
+完成时机：
+
+- 在 `api-contract.md` 和页面规格稳定后编写。
+
+### 7.3 内容运营文档
 
 路径：`docs/ops/content-operations.md`
 
 用于定义阵型、图片、链接、视频、时间戳、审核状态和失效链接处理流程。
 
-## 7. 推荐推进顺序
+完成时机：
+
+- 在 `review-and-ingestion.md` 完成后编写。
+- 在开始规模化整理阵型和视频内容前完成。
+
+## 8. 推荐推进顺序
 
 当前推荐顺序：
 
@@ -196,7 +277,11 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 4. 完成 `docs/product/content-data-policy.md`。
 5. 完成 `docs/architecture/data-model.md`。
 6. 完成 `docs/project/implementation-roadmap.md`。
-7. 根据开发节奏补齐 `system-architecture.md`、`api-contract.md`、`acceptance-checklist.md`、`content-operations.md`。
+7. 完成 `docs/architecture/system-architecture.md`。
+8. 按实现顺序完成 `docs/architecture/features/image-search.md`、`layout-library.md`、`video-association.md`、`war-data.md`、`review-and-ingestion.md`。
+9. 完成 `docs/api/api-contract.md`。
+10. 完成 `docs/qa/acceptance-checklist.md`。
+11. 完成 `docs/ops/content-operations.md`。
 
 判断标准：
 
@@ -205,8 +290,11 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 - 如果还在讨论“页面放什么”，优先更新 `page-spec.md`。
 - 如果还在讨论“数据怎么存”，优先更新 `data-model.md`。
 - 如果还在讨论“先开发哪块”，优先更新 `implementation-roadmap.md`。
+- 如果还在讨论“系统整体怎么搭”，优先更新 `system-architecture.md`。
+- 如果还在讨论“某个功能内部怎么实现”，优先更新对应的 `docs/architecture/features/*.md`。
+- 如果还在讨论“前后端怎么对接”，优先更新 `api-contract.md`。
 
-## 8. 当前完成情况
+## 9. 当前完成情况
 
 截至 2026-06-05：
 
@@ -218,4 +306,6 @@ WarSpark 当前处于产品定义和 MVP 边界收敛阶段，文档工作的重
 - 已完成：内容与数据边界文档。
 - 已完成：数据模型文档。
 - 已完成：实施路线图。
-- 后续补充：系统架构、API 契约、验收清单、内容运营流程。
+- 待编写：系统架构。
+- 待编写：功能技术设计文档组。
+- 后续补充：API 契约、验收清单、内容运营流程。
