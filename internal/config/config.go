@@ -29,6 +29,7 @@ type Config struct {
 	MySQL  MySQLConfig  `yaml:"mysql"`
 	Redis  RedisConfig  `yaml:"redis"`
 	JWT    JWTConfig    `yaml:"jwt"`
+	CoC    CoCConfig    `yaml:"coc"`
 	Log    LogConfig    `yaml:"log"`
 	Docs   DocsConfig   `yaml:"docs"`
 }
@@ -86,6 +87,13 @@ type JWTConfig struct {
 	Issuer        string        `yaml:"issuer"`
 	AccessExpire  time.Duration `yaml:"access_expire"`
 	RefreshExpire time.Duration `yaml:"refresh_expire"`
+}
+
+type CoCConfig struct {
+	BaseURL            string        `yaml:"base_url"`
+	APIToken           string        `yaml:"api_token"`
+	Timeout            time.Duration `yaml:"timeout"`
+	CurrentWarCacheTTL time.Duration `yaml:"current_war_cache_ttl"`
 }
 
 type LogConfig struct {
@@ -187,6 +195,11 @@ func Defaults() Config {
 			AccessExpire:  30 * time.Minute,
 			RefreshExpire: 168 * time.Hour,
 		},
+		CoC: CoCConfig{
+			BaseURL:            "https://api.clashofclans.com/v1",
+			Timeout:            10 * time.Second,
+			CurrentWarCacheTTL: 2 * time.Minute,
+		},
 		Log: LogConfig{
 			Level: "info",
 			Console: ConsoleLogConfig{
@@ -272,6 +285,11 @@ func setDefaults(v *viper.Viper, cfg Config) {
 	v.SetDefault("jwt.access_expire", cfg.JWT.AccessExpire)
 	v.SetDefault("jwt.refresh_expire", cfg.JWT.RefreshExpire)
 
+	v.SetDefault("coc.base_url", cfg.CoC.BaseURL)
+	v.SetDefault("coc.api_token", cfg.CoC.APIToken)
+	v.SetDefault("coc.timeout", cfg.CoC.Timeout)
+	v.SetDefault("coc.current_war_cache_ttl", cfg.CoC.CurrentWarCacheTTL)
+
 	v.SetDefault("log.level", cfg.Log.Level)
 	v.SetDefault("log.console.enabled", cfg.Log.Console.Enabled)
 	v.SetDefault("log.file.enabled", cfg.Log.File.Enabled)
@@ -325,6 +343,15 @@ func (c Config) Validate() error {
 	}
 	if c.JWT.AccessExpire <= 0 || c.JWT.RefreshExpire <= 0 {
 		return fmt.Errorf("jwt access_expire and refresh_expire must be positive")
+	}
+	if c.CoC.BaseURL == "" {
+		return fmt.Errorf("coc.base_url is required")
+	}
+	if c.CoC.Timeout <= 0 {
+		return fmt.Errorf("coc.timeout must be positive")
+	}
+	if c.CoC.CurrentWarCacheTTL <= 0 {
+		return fmt.Errorf("coc.current_war_cache_ttl must be positive")
 	}
 	if !c.Log.Console.Enabled && !c.Log.File.Enabled {
 		return fmt.Errorf("at least one log output must be enabled")

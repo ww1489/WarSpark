@@ -15,6 +15,8 @@ const (
 	ErrMissingField ErrorCode = 10004
 	ErrInvalidField ErrorCode = 10005
 	ErrInternal     ErrorCode = 10006
+	ErrNotFound     ErrorCode = 10007
+	ErrRateLimited  ErrorCode = 10008
 )
 
 type AppError struct {
@@ -72,6 +74,10 @@ func StatusForCode(code ErrorCode) int {
 		return http.StatusForbidden
 	case ErrMissingField, ErrInvalidField:
 		return http.StatusUnprocessableEntity
+	case ErrNotFound:
+		return http.StatusNotFound
+	case ErrRateLimited:
+		return http.StatusTooManyRequests
 	default:
 		return http.StatusInternalServerError
 	}

@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS admin_audit_logs;
+DROP TABLE IF EXISTS import_batches;
+DROP TABLE IF EXISTS war_targets;
+DROP TABLE IF EXISTS war_members;
+DROP TABLE IF EXISTS war_snapshots;
+DROP TABLE IF EXISTS image_search_results;
+DROP TABLE IF EXISTS image_search_jobs;
+DROP TABLE IF EXISTS layout_video_matches;
+DROP TABLE IF EXISTS videos;
+DROP TABLE IF EXISTS layout_links;
+DROP TABLE IF EXISTS layout_images;
+DROP TABLE IF EXISTS base_layouts;
