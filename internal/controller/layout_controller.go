@@ -14,6 +14,7 @@ import (
 type LayoutReader interface {
 	ListLayouts(ctx context.Context, filter layoutdomain.ListFilter, pagination utils.Pagination) (layoutdomain.ListResult, error)
 	GetLayout(ctx context.Context, id string) (layoutdomain.Detail, error)
+	ListVideos(ctx context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error)
 }
 
 type LayoutController struct {
@@ -92,6 +93,34 @@ func (c *LayoutController) Get(ctx *gin.Context) {
 	utils.OK(ctx, detail)
 }
 
+
+// ListVideos returns public video matches for a layout, optionally filtered by match_group and match_type.
+//
+// @Summary List layout videos
+// @Tags layouts
+// @Produce json
+// @Param layout_id path string true "Layout ID"
+// @Param match_group query string false "attack_video or defense_replay"
+// @Param match_type query string false "exact, similar, or same_th"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /api/v1/layouts/{layout_id}/videos [get]
+func (c *LayoutController) ListVideos(ctx *gin.Context) {
+	layoutID := ctx.Param("layout_id")
+	if layoutID == "" {
+		utils.Fail(ctx, utils.NewError(utils.ErrMissingField, "layout id is required"))
+		return
+	}
+
+	matchGroup := ctx.Query("match_group")
+	matchType := ctx.Query("match_type")
+	videos, err := c.service.ListVideos(ctx.Request.Context(), layoutID, matchGroup, matchType)
+	if err != nil {
+		utils.Fail(ctx, err)
+		return
+	}
+	utils.OK(ctx, gin.H{"items": videos})
+}
 func layoutFilter(ctx *gin.Context) (layoutdomain.ListFilter, error) {
 	filter := layoutdomain.ListFilter{
 		LayoutType:    ctx.Query("layout_type"),

@@ -678,6 +678,51 @@ ORDER BY CASE lvm.match_type WHEN 'exact' THEN 1 WHEN 'similar' THEN 2 ELSE 3 EN
 	}
 	return matches, nil
 }
+// ListVideosByLayout returns public video matches for a layout, optionally filtered by match_group and match_type.
+func (r *LayoutRepository) ListVideosByLayout(ctx context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
+	query := `
+SELECT
+	lvm.id AS match_id,
+	v.id AS video_id,
+	v.youtube_video_id,
+	v.title AS video_title,
+	COALESCE(v.channel_name, '') AS channel_name,
+	lvm.timestamp_seconds,
+	lvm.match_group,
+	lvm.match_type,
+	lvm.stars,
+	lvm.destruction_percent,
+	COALESCE(CAST(lvm.video_tags AS CHAR), '[]') AS video_tags_json,
+	lvm.confidence_score,
+	lvm.review_status
+FROM layout_video_matches lvm
+JOIN videos v ON v.id = lvm.video_id
+WHERE lvm.layout_id = ? AND v.visibility = 'public'`
+	args := []any{layoutID}
+	if matchGroup != "" {
+		query += " AND lvm.match_group = ?"
+		args = append(args, matchGroup)
+	}
+	if matchType != "" {
+		query += " AND lvm.match_type = ?"
+		args = append(args, matchType)
+	}
+	query += " ORDER BY CASE lvm.match_type WHEN 'exact' THEN 1 WHEN 'similar' THEN 2 ELSE 3 END, lvm.confidence_score DESC"
+
+	var rows []layoutVideoMatchRow
+	if err := r.db.SelectContext(ctx, &rows, query, args...); err != nil {
+		return nil, fmt.Errorf("list layout videos: %w", err)
+	}
+	matches := make([]layoutdomain.VideoMatch, 0, len(rows))
+	for _, row := range rows {
+		match, err := row.match()
+		if err != nil {
+			return nil, err
+		}
+		matches = append(matches, match)
+	}
+	return matches, nil
+}
 
 func layoutWhereClause(filter layoutdomain.ListFilter) (string, []any) {
 	conditions := []string{"bl.visibility = 'public'"}

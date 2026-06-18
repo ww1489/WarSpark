@@ -12,6 +12,7 @@ import (
 type LayoutRepository interface {
 	List(ctx context.Context, filter layoutdomain.ListFilter, pagination utils.Pagination) (layoutdomain.ListResult, error)
 	Get(ctx context.Context, id string) (layoutdomain.Detail, error)
+	ListVideosByLayout(ctx context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error)
 	CreateDraft(ctx context.Context, input layoutdomain.CreateInput) (layoutdomain.Detail, error)
 	AddLink(ctx context.Context, id string, layoutID string, input layoutdomain.LinkInput) (layoutdomain.Link, error)
 	UpdateLink(ctx context.Context, linkID string, input layoutdomain.LinkUpdateInput) (layoutdomain.Link, error)
@@ -35,6 +36,10 @@ func (s *LayoutService) ListLayouts(ctx context.Context, filter layoutdomain.Lis
 
 func (s *LayoutService) GetLayout(ctx context.Context, id string) (layoutdomain.Detail, error) {
 	return s.repository.Get(ctx, id)
+}
+
+func (s *LayoutService) ListVideos(ctx context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
+	return s.repository.ListVideosByLayout(ctx, layoutID, matchGroup, matchType)
 }
 
 func (s *LayoutService) CreateLayoutDraft(ctx context.Context, input layoutdomain.CreateInput) (layoutdomain.Detail, error) {

@@ -51,6 +51,7 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
 		api.GET("/ready", healthController.Ready)
 		api.GET("/layouts", layoutController.List)
 		api.GET("/layouts/:layout_id", layoutController.Get)
+		api.GET("/layouts/:layout_id/videos", layoutController.ListVideos)
 		api.POST("/image-search/jobs", imageSearchController.CreateJob)
 		api.GET("/image-search/jobs/:job_id", imageSearchController.GetJob)
 		api.GET("/image-search/jobs/:job_id/results", imageSearchController.GetResults)

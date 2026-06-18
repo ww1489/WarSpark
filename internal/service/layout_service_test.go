@@ -235,6 +235,10 @@ func (f *fakeLayoutRepository) ListAuditLogs(_ context.Context, pagination utils
 	return f.auditLogs, nil
 }
 
+
+func (f *fakeLayoutRepository) ListVideosByLayout(_ context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
+	return nil, nil
+}
 func (f *fakeLayoutRepository) UpdateReviewStatus(_ context.Context, input layoutdomain.ReviewUpdateInput) (layoutdomain.ReviewUpdateResult, error) {
 	f.reviewInput = input
 	return f.reviewResult, nil
