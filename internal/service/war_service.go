@@ -16,6 +16,7 @@ var clanTagPattern = regexp.MustCompile(`^#?[A-Z0-9]{3,16}$`)
 
 type WarAPIClient interface {
 	CurrentWar(ctx context.Context, clanTag string) (wardomain.CurrentWar, error)
+	CWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error)
 }
 
 type WarRepository interface {
@@ -87,6 +88,28 @@ func (s *WarService) FetchCurrentWar(ctx context.Context, clanTag string) (wardo
 	return snapshot, nil
 }
 
+
+func (s *WarService) FetchCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error) {
+	normalizedTag, err := NormalizeClanTag(clanTag)
+	if err != nil {
+		return wardomain.CWLGroup{}, err
+	}
+	group, err := s.client.CWLGroup(ctx, normalizedTag)
+	if err != nil {
+		return wardomain.CWLGroup{}, err
+	}
+	// Fill clan tag/name from the requesting clan if not set
+	if group.ClanTag == "" {
+		group.ClanTag = normalizedTag
+	}
+	for _, clan := range group.Clans {
+		if clan.Tag == normalizedTag {
+			group.ClanName = clan.Name
+			break
+		}
+	}
+	return group, nil
+}
 func (s *WarService) ListMembers(ctx context.Context, snapshotID string, side string, pagination utils.Pagination) (wardomain.MemberListResult, error) {
 	return s.repository.ListMembers(ctx, snapshotID, side, pagination)
 }

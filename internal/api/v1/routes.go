@@ -57,6 +57,7 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
 		api.GET("/image-search/jobs/:job_id/results", imageSearchController.GetResults)
 		api.POST("/image-search/jobs/:job_id/retry", imageSearchController.RetryJob)
 		api.GET("/war/current", warController.GetCurrent)
+		api.GET("/war/cwl", warController.GetCWL)
 		api.GET("/war/snapshots/:war_snapshot_id/members", warController.ListMembers)
 
 		admin := api.Group("/admin", authmw.Required(runtimeConfig.TokenManager))

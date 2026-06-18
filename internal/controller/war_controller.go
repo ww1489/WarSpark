@@ -14,6 +14,7 @@ import (
 type WarReader interface {
 	FetchCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, error)
 	ListMembers(ctx context.Context, snapshotID string, side string, pagination utils.Pagination) (wardomain.MemberListResult, error)
+	FetchCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error)
 }
 
 type WarController struct {
@@ -48,6 +49,31 @@ func (c *WarController) GetCurrent(ctx *gin.Context) {
 	utils.OK(ctx, snapshot)
 }
 
+
+// GetCWL returns the current Clan War League group for a clan.
+//
+// @Summary Get CWL group
+// @Tags war
+// @Produce json
+// @Param clan_tag query string true "Clan tag"
+// @Success 200 {object} utils.Response
+// @Failure 422 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/war/cwl [get]
+func (c *WarController) GetCWL(ctx *gin.Context) {
+	clanTag := ctx.Query("clan_tag")
+	if clanTag == "" {
+		utils.Fail(ctx, utils.NewError(utils.ErrMissingField, "clan_tag is required"))
+		return
+	}
+
+	group, err := c.service.FetchCWLGroup(ctx.Request.Context(), clanTag)
+	if err != nil {
+		failWar(ctx, err)
+		return
+	}
+	utils.OK(ctx, group)
+}
 // ListMembers returns members for a saved war snapshot.
 //
 // @Summary List war snapshot members
