@@ -27,11 +27,14 @@ type WarRepository interface {
 type WarCache interface {
 	GetCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, bool, error)
 	SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot, ttl time.Duration) error
+	GetCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, bool, error)
+	SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error
 }
 
 type WarServiceOptions struct {
 	Cache              WarCache
 	CurrentWarCacheTTL time.Duration
+	CWLGroupCacheTTL  time.Duration
 }
 
 type WarService struct {
@@ -39,6 +42,7 @@ type WarService struct {
 	repository         WarRepository
 	cache              WarCache
 	currentWarCacheTTL time.Duration
+	cwlGroupCacheTTL  time.Duration
 	now                func() time.Time
 }
 
@@ -50,11 +54,15 @@ func NewWarService(client WarAPIClient, repository WarRepository, options ...War
 	if option.CurrentWarCacheTTL <= 0 {
 		option.CurrentWarCacheTTL = 2 * time.Minute
 	}
+	if option.CWLGroupCacheTTL <= 0 {
+		option.CWLGroupCacheTTL = 5 * time.Minute
+	}
 	return &WarService{
 		client:             client,
 		repository:         repository,
 		cache:              option.Cache,
 		currentWarCacheTTL: option.CurrentWarCacheTTL,
+		cwlGroupCacheTTL:  option.CWLGroupCacheTTL,
 		now:                time.Now,
 	}
 }
@@ -94,11 +102,18 @@ func (s *WarService) FetchCWLGroup(ctx context.Context, clanTag string) (wardoma
 	if err != nil {
 		return wardomain.CWLGroup{}, err
 	}
+
+	if s.cache != nil {
+		group, ok, err := s.cache.GetCWLGroup(ctx, normalizedTag)
+		if err == nil && ok {
+			return group, nil
+		}
+	}
+
 	group, err := s.client.CWLGroup(ctx, normalizedTag)
 	if err != nil {
 		return wardomain.CWLGroup{}, err
 	}
-	// Fill clan tag/name from the requesting clan if not set
 	if group.ClanTag == "" {
 		group.ClanTag = normalizedTag
 	}
@@ -108,8 +123,12 @@ func (s *WarService) FetchCWLGroup(ctx context.Context, clanTag string) (wardoma
 			break
 		}
 	}
+	if s.cache != nil {
+		_ = s.cache.SetCWLGroup(ctx, normalizedTag, group, s.cwlGroupCacheTTL)
+	}
 	return group, nil
 }
+
 func (s *WarService) ListMembers(ctx context.Context, snapshotID string, side string, pagination utils.Pagination) (wardomain.MemberListResult, error) {
 	return s.repository.ListMembers(ctx, snapshotID, side, pagination)
 }

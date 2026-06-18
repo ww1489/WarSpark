@@ -80,3 +80,4 @@ coc:
   api_token: ""
   timeout: 10s
   current_war_cache_ttl: 2m
+  cwl_group_cache_ttl: 5m

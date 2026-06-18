@@ -243,3 +243,11 @@ func (f *fakeWarCache) SetCurrentWar(ctx context.Context, clanTag string, snapsh
 	f.setTTL = ttl
 	return f.setErr
 }
+
+func (f *fakeWarCache) GetCWLGroup(_ context.Context, clanTag string) (wardomain.CWLGroup, bool, error) {
+	return wardomain.CWLGroup{}, false, nil
+}
+
+func (f *fakeWarCache) SetCWLGroup(_ context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error {
+	return nil
+}

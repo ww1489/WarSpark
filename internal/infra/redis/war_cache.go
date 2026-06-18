@@ -54,3 +54,39 @@ func currentWarKey(clanTag string) string {
 	tag = strings.TrimPrefix(tag, "#")
 	return "war:current:" + tag
 }
+
+
+func (c *WarCache) GetCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, bool, error) {
+	if c == nil || c.client == nil {
+		return wardomain.CWLGroup{}, false, nil
+	}
+	data, err := c.client.Get(ctx, cwlGroupKey(clanTag)).Bytes()
+	if err != nil {
+		if errors.Is(err, goredis.Nil) {
+			return wardomain.CWLGroup{}, false, nil
+		}
+		return wardomain.CWLGroup{}, false, err
+	}
+	var group wardomain.CWLGroup
+	if err := json.Unmarshal(data, &group); err != nil {
+		return wardomain.CWLGroup{}, false, err
+	}
+	return group, true, nil
+}
+
+func (c *WarCache) SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error {
+	if c == nil || c.client == nil {
+		return nil
+	}
+	data, err := json.Marshal(group)
+	if err != nil {
+		return err
+	}
+	return c.client.Set(ctx, cwlGroupKey(clanTag), data, ttl).Err()
+}
+
+func cwlGroupKey(clanTag string) string {
+	tag := strings.ToUpper(strings.TrimSpace(clanTag))
+	tag = strings.TrimPrefix(tag, "#")
+	return "war:cwl:" + tag
+}

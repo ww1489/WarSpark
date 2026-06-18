@@ -36,6 +36,7 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
 	warService := service.NewWarService(warAPIClient, warRepository, service.WarServiceOptions{
 		Cache:              warCache,
 		CurrentWarCacheTTL: runtimeConfig.Config.CoC.CurrentWarCacheTTL,
+		CWLGroupCacheTTL:  runtimeConfig.Config.CoC.CWLGroupCacheTTL,
 	})
 	warController := controller.NewWarController(warService)
 

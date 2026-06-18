@@ -94,6 +94,7 @@ type CoCConfig struct {
 	APIToken           string        `yaml:"api_token"`
 	Timeout            time.Duration `yaml:"timeout"`
 	CurrentWarCacheTTL time.Duration `yaml:"current_war_cache_ttl"`
+	CWLGroupCacheTTL  time.Duration `yaml:"cwl_group_cache_ttl"`
 }
 
 type LogConfig struct {
@@ -199,6 +200,7 @@ func Defaults() Config {
 			BaseURL:            "https://api.clashofclans.com/v1",
 			Timeout:            10 * time.Second,
 			CurrentWarCacheTTL: 2 * time.Minute,
+			CWLGroupCacheTTL:  5 * time.Minute,
 		},
 		Log: LogConfig{
 			Level: "info",
@@ -289,6 +291,7 @@ func setDefaults(v *viper.Viper, cfg Config) {
 	v.SetDefault("coc.api_token", cfg.CoC.APIToken)
 	v.SetDefault("coc.timeout", cfg.CoC.Timeout)
 	v.SetDefault("coc.current_war_cache_ttl", cfg.CoC.CurrentWarCacheTTL)
+	v.SetDefault("coc.cwl_group_cache_ttl", cfg.CoC.CWLGroupCacheTTL)
 
 	v.SetDefault("log.level", cfg.Log.Level)
 	v.SetDefault("log.console.enabled", cfg.Log.Console.Enabled)
@@ -352,6 +355,9 @@ func (c Config) Validate() error {
 	}
 	if c.CoC.CurrentWarCacheTTL <= 0 {
 		return fmt.Errorf("coc.current_war_cache_ttl must be positive")
+	}
+	if c.CoC.CWLGroupCacheTTL <= 0 {
+		return fmt.Errorf("coc.cwl_group_cache_ttl must be positive")
 	}
 	if !c.Log.Console.Enabled && !c.Log.File.Enabled {
 		return fmt.Errorf("at least one log output must be enabled")
