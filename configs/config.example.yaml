@@ -74,3 +74,9 @@ log:
 
 docs:
   swagger_enabled: true
+
+coc:
+  base_url: "https://api.clashofclans.com/v1"
+  api_token: ""
+  timeout: 10s
+  current_war_cache_ttl: 2m

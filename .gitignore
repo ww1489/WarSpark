@@ -12,3 +12,5 @@ coverage.out
 
 .env
 .env.*
+
+configs/config.dev.yaml
