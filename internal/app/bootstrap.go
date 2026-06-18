@@ -16,6 +16,9 @@ import (
 	loggingmw "github.com/ww1489/WarSpark/internal/middleware/logging"
 	recoverymw "github.com/ww1489/WarSpark/internal/middleware/recovery"
 	requestidmw "github.com/ww1489/WarSpark/internal/middleware/requestid"
+	"github.com/ww1489/WarSpark/internal/repository"
+	"github.com/ww1489/WarSpark/internal/service"
+	"github.com/ww1489/WarSpark/internal/worker"
 	appjwt "github.com/ww1489/WarSpark/pkg/jwt"
 )
 
@@ -26,6 +29,9 @@ type StartOptions struct {
 
 // Start initializes infrastructure, starts the HTTP server, and shuts down gracefully.
 func Start(parent context.Context, opts StartOptions) error {
+	appCtx, cancelApp := context.WithCancel(parent)
+	defer cancelApp()
+
 	cfg, err := appconfig.Load(opts.ConfigPath, opts.PortOverride)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
@@ -39,7 +45,7 @@ func Start(parent context.Context, opts StartOptions) error {
 
 	gin.SetMode(cfg.Server.Mode)
 
-	infraCtx, cancelInfra := context.WithTimeout(parent, cfg.Server.StartupTimeout)
+	infraCtx, cancelInfra := context.WithTimeout(appCtx, cfg.Server.StartupTimeout)
 	defer cancelInfra()
 
 	mysqlDB, err := inframysql.New(infraCtx, cfg.MySQL)
@@ -80,5 +86,11 @@ func Start(parent context.Context, opts StartOptions) error {
 	runtimeConfig := appconfig.NewRuntimeConfig(cfg, logger, mysqlDB, redisClient, tokenManager)
 	v1.SetupRoutes(router, runtimeConfig)
 
-	return runHTTPServer(parent, logger, cfg.Server, router)
+	imageSearchRepository := repository.NewImageSearchRepository(mysqlDB)
+	imageStorage := service.NewLocalImageStorage("data/uploads", "/uploads")
+	imageSearchService := service.NewImageSearchService(imageSearchRepository, imageStorage)
+	imageSearchWorker := worker.NewImageSearchWorker(imageSearchService, logger, worker.ImageSearchWorkerOptions{})
+	imageSearchWorker.Start(appCtx)
+
+	return runHTTPServer(appCtx, logger, cfg.Server, router)
 }
