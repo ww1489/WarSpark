@@ -35,6 +35,7 @@ func execute() error {
 	)
 	rootCmd.AddCommand(newServerCommand(opts))
 	rootCmd.AddCommand(newMigrateCommand(opts))
+	rootCmd.AddCommand(newCocapiCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

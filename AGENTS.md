@@ -15,6 +15,9 @@ Go REST API backend template. Module: `github.com/ww1489/WarSpark`, Go 1.26.3.
 | `make docs` | Regenerate Swagger from `cmd/warspark/main.go` annotations |
 | `make migrate-create MIGRATION_NAME=x` | Create sequential `.up.sql`/`.down.sql` pair |
 | `make migrate-up` / `make migrate-down STEPS=1` | Apply/revert migrations via Cobra |
+| `go run ./cmd/warspark cocapi sync --token=xxx` | Fetch latest CoC swagger + regenerate client code (recommended) |
+| `go run ./cmd/warspark cocapi fetch --token=xxx` | Fetch latest CoC swagger only |
+| `go run ./cmd/warspark cocapi generate` | Regenerate CoC client code from existing swagger |
 
 CI runs: formatting check (`gofmt -l .` → no output), `go vet ./...`, `go test -buildvcs=false ./...`, `go build -buildvcs=false ./cmd/warspark`.
 
