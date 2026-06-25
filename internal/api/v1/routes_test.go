@@ -9,12 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 
 	appconfig "github.com/ww1489/WarSpark/internal/config"
+	"github.com/ww1489/WarSpark/internal/repository"
+	"github.com/ww1489/WarSpark/internal/service"
 	appjwt "github.com/ww1489/WarSpark/pkg/jwt"
 )
 
 func TestAdminRoutesRequireAuth(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	imageSearchService := service.NewImageSearchService(
+		repository.NewImageSearchRepository(nil),
+		service.NewLocalImageStorage("data/uploads", "/uploads"),
+	)
 	SetupRoutes(router, appconfig.RuntimeConfig{
 		Config: appconfig.Config{},
 		TokenManager: appjwt.New(appjwt.Config{
@@ -23,7 +29,7 @@ func TestAdminRoutesRequireAuth(t *testing.T) {
 			AccessExpire:  time.Minute,
 			RefreshExpire: time.Hour,
 		}),
-	})
+	}, imageSearchService)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/api/v1/admin/layouts", nil)

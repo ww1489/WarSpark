@@ -18,15 +18,12 @@ import (
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
-func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
+func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imageSearchService *service.ImageSearchService) {
 	healthController := controller.NewHealthController(runtimeConfig.MySQL, runtimeConfig.Redis)
 	layoutRepository := repository.NewLayoutRepository(runtimeConfig.MySQL)
 	layoutService := service.NewLayoutService(layoutRepository)
 	layoutController := controller.NewLayoutController(layoutService)
 	adminLayoutController := controller.NewAdminLayoutController(layoutService)
-	imageSearchRepository := repository.NewImageSearchRepository(runtimeConfig.MySQL)
-	imageStorage := service.NewLocalImageStorage("data/uploads", "/uploads")
-	imageSearchService := service.NewImageSearchService(imageSearchRepository, imageStorage)
 	imageSearchUploadLimiter := infraredis.NewImageSearchUploadRateLimiter(runtimeConfig.Redis)
 	imageSearchController := controller.NewImageSearchController(imageSearchService, controller.ImageSearchControllerOptions{
 		UploadLimiter: imageSearchUploadLimiter,

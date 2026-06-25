@@ -8,11 +8,11 @@
 
 | 项 | 值 |
 | --- | --- |
-| 生成日期 | 2026-06-18 |
-| 分支 | dev_v1 |
-| 最近提交 | 3313bef Add Redis cache for CWL group endpoint |
+| 生成日期 | 2026-06-25 |
+| 分支 | dev_v1_local |
+| 最近提交 | 3c636a7 Migrate war module to use pkg/cocapi via adapter |
 | 编译 | `go build ./...` 通过 |
-| 测试 | `go test ./...` 全部通过(9 个测试包 ok,0 失败) |
+| 测试 | `go test ./...` 全部通过(14 个测试包 ok,0 失败) |
 | 模块路径 | github.com/ww1489/WarSpark |
 | Go 版本 | 见 go.mod |
 
@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | Phase 0 产品文档与数据模型 | 完成 | PRD/MVP/流程/页面/数据政策/路线图/架构/功能技术设计/API 契约/验收清单/运营流程全部成稿 |
 | Phase 1 基础数据模型、布局库、内部后台架构 | 完成 | 12 张表迁移落库;布局列表/详情;admin 草稿/链接/视频关联/审核/审计 |
-| Phase 2 官方战争 API、截图上传、自动找阵结果页 | 完成 | CoC API 真实接入 + Redis 缓存;上传校验 + 异步 worker + 结果/重试接口;worker 已在 bootstrap 启动 |
+| Phase 2 官方战争 API、截图上传、自动找阵结果页 | 完成 | CoC API 真实接入 + Redis 缓存;上传校验 + 异步 worker + 结果/重试接口;worker 已在 bootstrap 启动;cocapi 独立包重构(06-25):官方 swagger 生成 35 端点客户端 + adapter 模式接入 |
 | Phase 3 相关视频和防守回放关联 | 部分 | 数据表 + 公开视频接口 + admin 关联已有;缺独立 video 模块、失效反馈、可访问性检查 |
 | Phase 4 战争情报增强和复盘入口 | 未开始 | 历史快照浏览/目标筛选排序/复盘草稿入口/后台缓存刷新均未实现 |
 | Phase 5 复盘和资料沉淀 | 未开始 | 复盘页/攻击防守记录/表现统计均未实现 |
@@ -114,6 +114,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 - 缓存:current_war 2min、CWL 5min(Redis,可配置),未命中才请求官方 API。
 - 快照落库:每次拉取 current war 生成 snapshot + members + targets,计算每位成员最佳防守结果(星数+摧毁率),对手成员自动生成 war_targets。
 - tag 校验:`NormalizeClanTag` 统一加 `#` 并校验 `^#?[A-Z0-9]{3,16}$`。
+- cocapi 独立包(2026-06-25 重构):`pkg/cocapi/` 从官方 Swagger 2.0 规范生成 35 端点客户端(types.go/api.go 生成,client.go/errors.go/tag.go 手写);`internal/cocgen/` 代码生成器 + `warspark cocapi syncapi/fetch/generate` 三子命令;`internal/infra/coc/client.go` 改写为 adapter,包装 `cocapi.Client` 实现 `service.WarAPIClient` 接口,转换 `cocapi.ClanWar`→`wardomain.CurrentWar`、`cocapi.ClanWarLeagueGroup`→`wardomain.CWLGroup`,错误经 `mapError` 映射为 `wardomain.Error`。service/controller/domain 层通过接口解耦,不感知 cocapi 包。
 
 ### 5.4 视频关联(video association)— 部分
 
@@ -131,7 +132,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 
 ## 6. 架构与运行链路
 
-分层:`cmd -> app -> api -> controller -> service -> repository -> domain`,infra 提供 coc/logger/mysql/redis,worker 独立异步,pkg 提供 jwt/snowflake。
+分层:`cmd -> app -> api -> controller -> service -> repository -> domain`,infra 提供 coc/logger/mysql/redis,worker 独立异步,pkg 提供 jwt/snowflake/cocapi。
 
 启动流程([bootstrap.go](/E:/Users/ww/Desktop/project/codex/project/WarSpark/internal/app/bootstrap.go)):
 
@@ -143,13 +144,14 @@ Admin 接口(JWT 鉴权,authmw.Required):
 6. 构造 imageSearchService + worker 并 `Start(appCtx)`(5s 轮询)
 7. `runHTTPServer`(Unix 用 endless 优雅重启,Windows 用标准 server)
 
-技术债:**依赖装配重复**——`bootstrap.go` 与 `routes.go` 各自构造一份 imageSearch repository/service(共享同一 `*sql.DB`,功能正常,但实例不共享且易不一致)。应统一到 bootstrap 构造后注入 SetupRoutes,见第 10 节。
+技术债:**依赖装配已统一**(2026-06-25)— `bootstrap.go` 构造 imageSearchService 后注入 `SetupRoutes` 并共享给 worker,`routes.go` 不再重复构造。
 
 ## 7. 质量状态
 
-- 编译:`go build ./...` 通过(2026-06-18)。
-- 测试:`go test ./...` 全绿。有测试的包:api/v1、config、controller、infra/coc、infra/logger、infra/mysql、middleware/auth、middleware/requestid、service、utils、worker、pkg/jwt、pkg/snowflake。
-- 覆盖缺口(无测试文件):`cmd/warspark`、`internal/app`、`internal/domain/*`、`internal/infra/redis`、`internal/repository`、`middleware/cors|logging|recovery`。
+- 编译:`go build ./...` 通过(2026-06-25)。
+- 测试:`go test ./...` 全绿(14 个测试包 ok)。有测试的包:api/v1、config、controller、infra/coc、infra/logger、infra/mysql、middleware/auth、middleware/requestid、service、utils、worker、pkg/cocapi、pkg/jwt、pkg/snowflake。
+- 格式:`gofmt -l .` 无输出,全部文件符合格式(2026-06-25)。
+- 覆盖缺口(无测试文件):`cmd/warspark`、`internal/app`、`internal/cocgen`、`internal/domain/*`、`internal/infra/redis`、`internal/repository`、`middleware/cors|logging|recovery`。
 - 持久层风险:`internal/repository`(layout 31KB + image_search 14KB + war 4KB)无任何测试,SQL 正确性依赖人工与运行时验证,是最高价值补测点。
 - CI:[.github/workflows/ci.yml](/E:/Users/ww/Desktop/project/codex/project/WarSpark/.github/workflows/ci.yml)。
 - Swagger:`docs/swagger.*` 与 `docs/docs.go` 仍是模板生成内容,未随业务接口更新(main.go 描述仍是"Reusable Go REST API backend template")。
@@ -161,6 +163,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 - 运行:`go run ./cmd/warspark server --config=configs/config.dev.yaml` 或 `make run`。
 - 迁移:`make migrate-up` / `make migrate-down STEPS=1` / `make migrate-version`。
 - 日志:默认输出到 `logs/warspark-dev.log`(已存在运行痕迹)。
+- cocapi 代码生成:`go run ./cmd/warspark cocapi syncapi --token=xxx`(下载 swagger + 生成代码)、`fetch --token=xxx`(仅下载)、`generate`(仅生成)。
 
 ## 9. 待办清单(后续开发优先级)
 
@@ -178,17 +181,14 @@ Admin 接口(JWT 鉴权,authmw.Required):
 
 ### P2 — 工程质量与 Phase 4 准备
 
-7. 依赖装配统一:bootstrap 构造所有依赖后注入 SetupRoutes,消除重复实例。
-8. Swagger 同步:用 swag 注解更新业务接口,替换模板描述。
-9. 部族/玩家概览:按需实现 `GET /clans/:tag`、`GET /players/:tag`(可由现有 CoC client 扩展)。
-10. Phase 4 前置:历史战争快照列表/详情接口、CWL 轮次视图、目标筛选排序、后台缓存刷新管理。
+7. Swagger 同步:用 swag 注解更新业务接口,替换模板描述。
+8. 部族/玩家概览:按需实现 `GET /clans/:tag`、`GET /players/:tag`(可由现有 CoC client 扩展)。
+9. Phase 4 前置:历史战争快照列表/详情接口、CWL 轮次视图、目标筛选排序、后台缓存刷新管理。
 
 ## 10. 技术债
 
-- 依赖装配重复(见第 6 节)。
 - repository 无测试(见第 7 节)。
 - Swagger 与 API 契约脱节。
-- `tmp_warspark.exe`(54MB)与 `logs/` 残留未纳入 .gitignore 清理;`.mcp.json` 为空且未跟踪。
 - image_search 匹配为占位,`buildings_detected` 字段未真正计算(当前仅按尺寸分 good/acceptable)。
 
 ## 11. 风险与不做事项(继承 mvp-scope)
@@ -202,7 +202,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 1. P0-1 找阵匹配算法(感知哈希起步,可迭代到 embedding)。
 2. P0-2 战争目标找阵入口,打通战争情报到找阵闭环。
 3. P1-4 视频模块独立化 + report-broken + 可访问性检查。
-4. P0-3 / P2-7 repository 测试 + 依赖装配统一(并行推进)。
+4. P0-3 repository 测试(依赖装配已统一,见第 6 节)。
 5. P1-6 入库与授权导入,支撑运营流程。
 6. Phase 4 战争情报增强(历史快照/目标排序/复盘草稿入口)。
 7. Phase 5 复盘与资料沉淀。

@@ -16,3 +16,5 @@ coverage.out
 configs/config.dev.yaml
 
 tmp_warspark.exe
+
+.mcp.json

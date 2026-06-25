@@ -84,11 +84,13 @@ func Start(parent context.Context, opts StartOptions) error {
 	)
 
 	runtimeConfig := appconfig.NewRuntimeConfig(cfg, logger, mysqlDB, redisClient, tokenManager)
-	v1.SetupRoutes(router, runtimeConfig)
 
 	imageSearchRepository := repository.NewImageSearchRepository(mysqlDB)
 	imageStorage := service.NewLocalImageStorage("data/uploads", "/uploads")
 	imageSearchService := service.NewImageSearchService(imageSearchRepository, imageStorage)
+
+	v1.SetupRoutes(router, runtimeConfig, imageSearchService)
+
 	imageSearchWorker := worker.NewImageSearchWorker(imageSearchService, logger, worker.ImageSearchWorkerOptions{})
 	imageSearchWorker.Start(appCtx)
 
