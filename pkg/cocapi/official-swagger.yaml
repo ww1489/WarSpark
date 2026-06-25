@@ -533,6 +533,16 @@ definitions:
         $ref: '#/definitions/CapitalLeague'
       tag:
         type: string
+      warFrequency:
+        type: string
+        enum:
+          - UNKNOWN
+          - ALWAYS
+          - MORE_THAN_ONCE_PER_WEEK
+          - ONCE_PER_WEEK
+          - LESS_THAN_ONCE_PER_WEEK
+          - NEVER
+          - ANY
       clanLevel:
         type: integer
       warWinStreak:
@@ -547,20 +557,6 @@ definitions:
         type: integer
       chatLanguage:
         $ref: '#/definitions/Language'
-      isFamilyFriendly:
-        type: boolean
-      requiredLeagueTier:
-        $ref: '#/definitions/LeagueTier'
-      warFrequency:
-        type: string
-        enum:
-          - UNKNOWN
-          - ALWAYS
-          - MORE_THAN_ONCE_PER_WEEK
-          - ONCE_PER_WEEK
-          - LESS_THAN_ONCE_PER_WEEK
-          - NEVER
-          - ANY
       isWarLogPublic:
         type: boolean
       clanBuilderBasePoints:
@@ -573,6 +569,10 @@ definitions:
         type: integer
       requiredTownhallLevel:
         type: integer
+      requiredLeagueTier:
+        $ref: '#/definitions/LeagueTier'
+      isFamilyFriendly:
+        type: boolean
       labels:
         $ref: '#/definitions/LabelList'
       name:
@@ -632,12 +632,14 @@ definitions:
   ClanWar:
     type: object
     properties:
+      attacksPerMember:
+        type: integer
       clan:
         $ref: '#/definitions/WarClan'
       teamSize:
         type: integer
-      attacksPerMember:
-        type: integer
+      opponent:
+        $ref: '#/definitions/WarClan'
       battleModifier:
         type: string
         enum:
@@ -646,8 +648,6 @@ definitions:
           - MINUS_ONE
           - MINUS_TWO
           - MINUS_THREE
-      opponent:
-        $ref: '#/definitions/WarClan'
       startTime:
         type: string
       state:
@@ -885,12 +885,14 @@ definitions:
   ClanWarLogEntry:
     type: object
     properties:
+      attacksPerMember:
+        type: integer
       clan:
         $ref: '#/definitions/WarClan'
       teamSize:
         type: integer
-      attacksPerMember:
-        type: integer
+      opponent:
+        $ref: '#/definitions/WarClan'
       battleModifier:
         type: string
         enum:
@@ -899,8 +901,6 @@ definitions:
           - MINUS_ONE
           - MINUS_TWO
           - MINUS_THREE
-      opponent:
-        $ref: '#/definitions/WarClan'
       endTime:
         type: string
       result:
@@ -1156,18 +1156,18 @@ definitions:
   PlayerLegendStatistics:
     type: object
     properties:
-      currentSeason:
-        $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
+      legendTrophies:
+        type: integer
       bestSeason:
         $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
-      bestBuilderBaseSeason:
-        $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
-      previousBuilderBaseSeason:
+      currentSeason:
         $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
       previousSeason:
         $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
-      legendTrophies:
-        type: integer
+      previousBuilderBaseSeason:
+        $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
+      bestBuilderBaseSeason:
+        $ref: '#/definitions/LegendLeagueTournamentSeasonResult'
   LegendLeagueTournamentSeasonResult:
     type: object
     properties:

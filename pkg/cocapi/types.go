@@ -752,20 +752,6 @@ type WarStatusList []WarStatus
 // long 官方规范未定义具体字段,按动态对象处理。
 type long map[string]any
 
-// LocationListResponse 是 LocationList 端点响应的包装(带分页)。
-// 官方规范把 LocationList 定义为 array,但实际响应是 {items, paging} 对象。
-type LocationListResponse struct {
-	Items  []Location `json:"items,omitempty"`
-	Paging Paging     `json:"paging,omitempty"`
-}
-
-// LabelListResponse 是 LabelList 端点响应的包装(带分页)。
-// 官方规范把 LabelList 定义为 array,但实际响应是 {items, paging} 对象。
-type LabelListResponse struct {
-	Items  []Label `json:"items,omitempty"`
-	Paging Paging  `json:"paging,omitempty"`
-}
-
 // LeagueListResponse 是 LeagueList 端点响应的包装(带分页)。
 // 官方规范把 LeagueList 定义为 array,但实际响应是 {items, paging} 对象。
 type LeagueListResponse struct {
@@ -773,39 +759,11 @@ type LeagueListResponse struct {
 	Paging Paging   `json:"paging,omitempty"`
 }
 
-// LeagueSeasonListResponse 是 LeagueSeasonList 端点响应的包装(带分页)。
-// 官方规范把 LeagueSeasonList 定义为 array,但实际响应是 {items, paging} 对象。
-type LeagueSeasonListResponse struct {
-	Items  []LeagueSeason `json:"items,omitempty"`
-	Paging Paging         `json:"paging,omitempty"`
-}
-
 // ClanCapitalRankingListResponse 是 ClanCapitalRankingList 端点响应的包装(带分页)。
 // 官方规范把 ClanCapitalRankingList 定义为 array,但实际响应是 {items, paging} 对象。
 type ClanCapitalRankingListResponse struct {
 	Items  []ClanCapitalRanking `json:"items,omitempty"`
 	Paging Paging               `json:"paging,omitempty"`
-}
-
-// BattleLogEntryListResponse 是 BattleLogEntryList 端点响应的包装(带分页)。
-// 官方规范把 BattleLogEntryList 定义为 array,但实际响应是 {items, paging} 对象。
-type BattleLogEntryListResponse struct {
-	Items  []BattleLogEntry `json:"items,omitempty"`
-	Paging Paging           `json:"paging,omitempty"`
-}
-
-// LeagueSeasonResultListResponse 是 LeagueSeasonResultList 端点响应的包装(带分页)。
-// 官方规范把 LeagueSeasonResultList 定义为 array,但实际响应是 {items, paging} 对象。
-type LeagueSeasonResultListResponse struct {
-	Items  []LeagueSeasonResult `json:"items,omitempty"`
-	Paging Paging               `json:"paging,omitempty"`
-}
-
-// ClanCapitalRaidSeasonsResponse 是 ClanCapitalRaidSeasons 端点响应的包装(带分页)。
-// 官方规范把 ClanCapitalRaidSeasons 定义为 array,但实际响应是 {items, paging} 对象。
-type ClanCapitalRaidSeasonsResponse struct {
-	Items  []ClanCapitalRaidSeason `json:"items,omitempty"`
-	Paging Paging                  `json:"paging,omitempty"`
 }
 
 // ClanBuilderBaseRankingListResponse 是 ClanBuilderBaseRankingList 端点响应的包装(带分页)。
@@ -822,25 +780,25 @@ type PlayerBuilderBaseRankingListResponse struct {
 	Paging Paging                     `json:"paging,omitempty"`
 }
 
-// WarLeagueListResponse 是 WarLeagueList 端点响应的包装(带分页)。
-// 官方规范把 WarLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
-type WarLeagueListResponse struct {
-	Items  []WarLeague `json:"items,omitempty"`
-	Paging Paging      `json:"paging,omitempty"`
+// ClanListResponse 是 ClanList 端点响应的包装(带分页)。
+// 官方规范把 ClanList 定义为 array,但实际响应是 {items, paging} 对象。
+type ClanListResponse struct {
+	Items  []Clan `json:"items,omitempty"`
+	Paging Paging `json:"paging,omitempty"`
 }
 
-// CapitalLeagueListResponse 是 CapitalLeagueList 端点响应的包装(带分页)。
-// 官方规范把 CapitalLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
-type CapitalLeagueListResponse struct {
-	Items  []CapitalLeague `json:"items,omitempty"`
+// LeagueSeasonListResponse 是 LeagueSeasonList 端点响应的包装(带分页)。
+// 官方规范把 LeagueSeasonList 定义为 array,但实际响应是 {items, paging} 对象。
+type LeagueSeasonListResponse struct {
+	Items  []LeagueSeason `json:"items,omitempty"`
+	Paging Paging         `json:"paging,omitempty"`
+}
+
+// PlayerRankingListResponse 是 PlayerRankingList 端点响应的包装(带分页)。
+// 官方规范把 PlayerRankingList 定义为 array,但实际响应是 {items, paging} 对象。
+type PlayerRankingListResponse struct {
+	Items  []PlayerRanking `json:"items,omitempty"`
 	Paging Paging          `json:"paging,omitempty"`
-}
-
-// LeagueTierListResponse 是 LeagueTierList 端点响应的包装(带分页)。
-// 官方规范把 LeagueTierList 定义为 array,但实际响应是 {items, paging} 对象。
-type LeagueTierListResponse struct {
-	Items  []LeagueTier `json:"items,omitempty"`
-	Paging Paging       `json:"paging,omitempty"`
 }
 
 // ClanRankingListResponse 是 ClanRankingList 端点响应的包装(带分页)。
@@ -850,18 +808,32 @@ type ClanRankingListResponse struct {
 	Paging Paging        `json:"paging,omitempty"`
 }
 
-// BuilderBaseLeagueListResponse 是 BuilderBaseLeagueList 端点响应的包装(带分页)。
-// 官方规范把 BuilderBaseLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
-type BuilderBaseLeagueListResponse struct {
-	Items  []BuilderBaseLeague `json:"items,omitempty"`
-	Paging Paging              `json:"paging,omitempty"`
+// BattleLogEntryListResponse 是 BattleLogEntryList 端点响应的包装(带分页)。
+// 官方规范把 BattleLogEntryList 定义为 array,但实际响应是 {items, paging} 对象。
+type BattleLogEntryListResponse struct {
+	Items  []BattleLogEntry `json:"items,omitempty"`
+	Paging Paging           `json:"paging,omitempty"`
 }
 
-// ClanListResponse 是 ClanList 端点响应的包装(带分页)。
-// 官方规范把 ClanList 定义为 array,但实际响应是 {items, paging} 对象。
-type ClanListResponse struct {
-	Items  []Clan `json:"items,omitempty"`
-	Paging Paging `json:"paging,omitempty"`
+// LeagueSeasonResultListResponse 是 LeagueSeasonResultList 端点响应的包装(带分页)。
+// 官方规范把 LeagueSeasonResultList 定义为 array,但实际响应是 {items, paging} 对象。
+type LeagueSeasonResultListResponse struct {
+	Items  []LeagueSeasonResult `json:"items,omitempty"`
+	Paging Paging               `json:"paging,omitempty"`
+}
+
+// CapitalLeagueListResponse 是 CapitalLeagueList 端点响应的包装(带分页)。
+// 官方规范把 CapitalLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
+type CapitalLeagueListResponse struct {
+	Items  []CapitalLeague `json:"items,omitempty"`
+	Paging Paging          `json:"paging,omitempty"`
+}
+
+// ClanCapitalRaidSeasonsResponse 是 ClanCapitalRaidSeasons 端点响应的包装(带分页)。
+// 官方规范把 ClanCapitalRaidSeasons 定义为 array,但实际响应是 {items, paging} 对象。
+type ClanCapitalRaidSeasonsResponse struct {
+	Items  []ClanCapitalRaidSeason `json:"items,omitempty"`
+	Paging Paging                  `json:"paging,omitempty"`
 }
 
 // ClanMemberListResponse 是 ClanMemberList 端点响应的包装(带分页)。
@@ -878,9 +850,37 @@ type ClanWarLogResponse struct {
 	Paging Paging            `json:"paging,omitempty"`
 }
 
-// PlayerRankingListResponse 是 PlayerRankingList 端点响应的包装(带分页)。
-// 官方规范把 PlayerRankingList 定义为 array,但实际响应是 {items, paging} 对象。
-type PlayerRankingListResponse struct {
-	Items  []PlayerRanking `json:"items,omitempty"`
-	Paging Paging          `json:"paging,omitempty"`
+// WarLeagueListResponse 是 WarLeagueList 端点响应的包装(带分页)。
+// 官方规范把 WarLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
+type WarLeagueListResponse struct {
+	Items  []WarLeague `json:"items,omitempty"`
+	Paging Paging      `json:"paging,omitempty"`
+}
+
+// LabelListResponse 是 LabelList 端点响应的包装(带分页)。
+// 官方规范把 LabelList 定义为 array,但实际响应是 {items, paging} 对象。
+type LabelListResponse struct {
+	Items  []Label `json:"items,omitempty"`
+	Paging Paging  `json:"paging,omitempty"`
+}
+
+// LeagueTierListResponse 是 LeagueTierList 端点响应的包装(带分页)。
+// 官方规范把 LeagueTierList 定义为 array,但实际响应是 {items, paging} 对象。
+type LeagueTierListResponse struct {
+	Items  []LeagueTier `json:"items,omitempty"`
+	Paging Paging       `json:"paging,omitempty"`
+}
+
+// LocationListResponse 是 LocationList 端点响应的包装(带分页)。
+// 官方规范把 LocationList 定义为 array,但实际响应是 {items, paging} 对象。
+type LocationListResponse struct {
+	Items  []Location `json:"items,omitempty"`
+	Paging Paging     `json:"paging,omitempty"`
+}
+
+// BuilderBaseLeagueListResponse 是 BuilderBaseLeagueList 端点响应的包装(带分页)。
+// 官方规范把 BuilderBaseLeagueList 定义为 array,但实际响应是 {items, paging} 对象。
+type BuilderBaseLeagueListResponse struct {
+	Items  []BuilderBaseLeague `json:"items,omitempty"`
+	Paging Paging              `json:"paging,omitempty"`
 }
