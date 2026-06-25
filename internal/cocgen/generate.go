@@ -468,6 +468,30 @@ func (l *Long) UnmarshalJSON(data []byte) error {
 	*l = 0
 	return nil
 }`,
+	// Float 官方定义为空 object,但实际 API 返回裸数字(如摧毁百分比)。
+	// 用自定义类型兼容 number 和 object 两种情况。
+	"Float": `type Float float64
+
+// UnmarshalJSON 兼容裸数字和 object 形式。
+func (f *Float) UnmarshalJSON(data []byte) error {
+	var n float64
+	if err := json.Unmarshal(data, &n); err == nil {
+		*f = Float(n)
+		return nil
+	}
+	// object 形式:取首个数值
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err == nil {
+		for _, v := range m {
+			if n, ok := v.(float64); ok {
+				*f = Float(n)
+				return nil
+			}
+		}
+	}
+	*f = 0
+	return nil
+}`,
 }
 
 // genDefinition 生成单个 definition 的 Go 类型。

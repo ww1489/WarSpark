@@ -3,63 +3,199 @@ package coc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	appconfig "github.com/ww1489/WarSpark/internal/config"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
-func TestClientCurrentWarSendsBearerTokenAndEscapedTag(t *testing.T) {
-	var gotPath string
-	var gotAuthorization string
+func TestCurrentWarConvertsCocapiToDomain(t *testing.T) {
+	var gotPath, gotAuth string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.EscapedPath()
-		gotAuthorization = r.Header.Get("Authorization")
-		_ = json.NewEncoder(w).Encode(wardomain.CurrentWar{
-			State:    "inWar",
-			TeamSize: 15,
-			Clan:     wardomain.WarClan{Tag: "#AAA111"},
-			Opponent: wardomain.WarClan{Tag: "#BBB222"},
+		gotAuth = r.Header.Get("Authorization")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"state":    "inWar",
+			"teamSize": 15,
+			"clan": map[string]any{
+				"tag":                   "#AAA",
+				"name":                  "My Clan",
+				"stars":                 10,
+				"destructionPercentage": 75.5,
+				"members": []map[string]any{
+					{
+						"tag":           "#P1",
+						"name":          "Player1",
+						"townhallLevel": 14,
+						"mapPosition":   1,
+						"attacks": []map[string]any{
+							{"attackerTag": "#P1", "defenderTag": "#E1", "stars": 3, "destructionPercentage": 100, "order": 1, "duration": 180},
+						},
+					},
+				},
+			},
+			"opponent": map[string]any{
+				"tag":                   "#BBB",
+				"name":                  "Enemy",
+				"stars":                 5,
+				"destructionPercentage": 50.0,
+				"members": []map[string]any{
+					{"tag": "#E1", "name": "Enemy1", "townhallLevel": 14, "mapPosition": 1},
+				},
+			},
 		})
 	}))
 	defer server.Close()
 
-	client := New(appconfig.CoCConfig{
-		BaseURL:  server.URL,
-		APIToken: "secret-token",
-		Timeout:  time.Second,
-	})
-
-	currentWar, err := client.CurrentWar(context.Background(), "#AAA111")
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	war, err := client.CurrentWar(context.Background(), "#AAA")
 	if err != nil {
-		t.Fatalf("CurrentWar returned error: %v", err)
+		t.Fatalf("CurrentWar error: %v", err)
 	}
 
-	if gotPath != "/clans/%23AAA111/currentwar" {
-		t.Fatalf("expected escaped tag path, got %q", gotPath)
+	if gotPath != "/clans/%23AAA/currentwar" {
+		t.Fatalf("path = %q, want /clans/%%23AAA/currentwar", gotPath)
 	}
-	if gotAuthorization != "Bearer secret-token" {
-		t.Fatalf("expected bearer token, got %q", gotAuthorization)
+	if gotAuth != "Bearer secret" {
+		t.Fatalf("auth = %q, want Bearer secret", gotAuth)
 	}
-	if currentWar.Opponent.Tag != "#BBB222" {
-		t.Fatalf("unexpected response: %#v", currentWar)
+
+	if war.State != "inWar" || war.TeamSize != 15 {
+		t.Fatalf("state=%s teamSize=%d", war.State, war.TeamSize)
+	}
+	if war.Clan.Name != "My Clan" || war.Clan.Stars != 10 {
+		t.Fatalf("clan: %+v", war.Clan)
+	}
+	if war.Clan.DestructionPercentage != 75.5 {
+		t.Fatalf("destruction = %v, want 75.5", war.Clan.DestructionPercentage)
+	}
+	if len(war.Clan.Members) != 1 {
+		t.Fatalf("members = %d, want 1", len(war.Clan.Members))
+	}
+	m := war.Clan.Members[0]
+	if m.TownHallLevel != 14 || m.MapPosition != 1 {
+		t.Fatalf("member: %+v", m)
+	}
+	if len(m.Attacks) != 1 || m.Attacks[0].Stars != 3 || m.Attacks[0].DestructionPercentage != 100 {
+		t.Fatalf("attacks: %+v", m.Attacks)
+	}
+	if war.Opponent.Tag != "#BBB" || war.Opponent.DestructionPercentage != 50.0 {
+		t.Fatalf("opponent: %+v", war.Opponent)
 	}
 }
 
-func TestClientCurrentWarRequiresToken(t *testing.T) {
-	client := New(appconfig.CoCConfig{
-		BaseURL: "https://api.clashofclans.com/v1",
-		Timeout: time.Second,
-	})
+func TestCWLGroupConvertsMembersCountAndRounds(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"state":  "preparation",
+			"season": "2026-06",
+			"clans": []map[string]any{
+				{"tag": "#C1", "name": "Clan1", "clanLevel": 10, "members": []map[string]any{{"tag": "#M1"}, {"tag": "#M2"}}},
+				{"tag": "#C2", "name": "Clan2", "clanLevel": 8, "members": []map[string]any{{"tag": "#M3"}}},
+			},
+			"rounds": []map[string]any{
+				{"warTags": []string{"#W1", "#W2"}},
+				{"warTags": []string{"#W3", "#W4"}},
+			},
+		})
+	}))
+	defer server.Close()
 
-	_, err := client.CurrentWar(context.Background(), "#AAA111")
-	if err == nil {
-		t.Fatal("expected api_not_configured error")
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	group, err := client.CWLGroup(context.Background(), "#C1")
+	if err != nil {
+		t.Fatalf("CWLGroup error: %v", err)
 	}
-	if got := wardomain.ErrorCode(err); got != wardomain.ErrorAPINotConfigured {
-		t.Fatalf("expected api_not_configured, got %q", got)
+
+	if group.State != "preparation" || group.Season != "2026-06" {
+		t.Fatalf("state=%s season=%s", group.State, group.Season)
+	}
+	if group.ClanTag != "" || group.ClanName != "" {
+		t.Fatalf("adapter should leave ClanTag/ClanName empty, got %q/%q", group.ClanTag, group.ClanName)
+	}
+	if len(group.Clans) != 2 {
+		t.Fatalf("clans = %d, want 2", len(group.Clans))
+	}
+	if group.Clans[0].Members != 2 || group.Clans[1].Members != 1 {
+		t.Fatalf("members count: %d, %d (want 2, 1)", group.Clans[0].Members, group.Clans[1].Members)
+	}
+	if len(group.Rounds) != 2 || len(group.Rounds[0].WarTags) != 2 {
+		t.Fatalf("rounds: %+v", group.Rounds)
+	}
+}
+
+func TestCurrentWarRequiresToken(t *testing.T) {
+	client := New(cocapi.Config{BaseURL: "https://example.com", Timeout: time.Second})
+	_, err := client.CurrentWar(context.Background(), "#AAA")
+	if err == nil {
+		t.Fatal("expected error for empty token")
+	}
+	if wardomain.ErrorCode(err) != wardomain.ErrorAPINotConfigured {
+		t.Fatalf("error code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorAPINotConfigured)
+	}
+}
+
+func TestErrorMapping(t *testing.T) {
+	cases := []struct {
+		name    string
+		cocapi  error
+		wantCod string
+	}{
+		{"not configured", cocapi.ErrAPINotConfigured, wardomain.ErrorAPINotConfigured},
+		{"access denied", cocapi.ErrAPIAccessDenied, wardomain.ErrorAPIAccessDenied},
+		{"not found", cocapi.ErrNotFound, wardomain.ErrorWarNotFound},
+		{"invalid tag", cocapi.ErrInvalidTag, wardomain.ErrorInvalidTag},
+		{"response invalid", cocapi.ErrAPIResponseInvalid, wardomain.ErrorAPIResponseInvalid},
+		{"request failed", cocapi.ErrAPIRequestFailed, wardomain.ErrorAPIRequestFailed},
+		{"rate limited", cocapi.ErrRateLimited, wardomain.ErrorAPIRequestFailed},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mapped := mapError(tc.cocapi)
+			if wardomain.ErrorCode(mapped) != tc.wantCod {
+				t.Fatalf("code = %q, want %q", wardomain.ErrorCode(mapped), tc.wantCod)
+			}
+			if !errors.Is(mapped, tc.cocapi) {
+				t.Fatalf("mapped error should wrap original: %v", mapped)
+			}
+		})
+	}
+}
+
+func TestCurrentWarMapsNotFoundError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]any{"reason": "notFound", "message": "clan not found"})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	_, err := client.CurrentWar(context.Background(), "#AAA")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if wardomain.ErrorCode(err) != wardomain.ErrorWarNotFound {
+		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorWarNotFound)
+	}
+}
+
+func TestCurrentWarMapsAccessDenied(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		_ = json.NewEncoder(w).Encode(map[string]any{"reason": "accessDenied", "message": "denied"})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	_, err := client.CurrentWar(context.Background(), "#AAA")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if wardomain.ErrorCode(err) != wardomain.ErrorAPIAccessDenied {
+		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorAPIAccessDenied)
 	}
 }

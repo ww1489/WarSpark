@@ -15,6 +15,7 @@ import (
 	authmw "github.com/ww1489/WarSpark/internal/middleware/auth"
 	"github.com/ww1489/WarSpark/internal/repository"
 	"github.com/ww1489/WarSpark/internal/service"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
@@ -31,12 +32,16 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig) {
 		UploadLimiter: imageSearchUploadLimiter,
 	})
 	warRepository := repository.NewWarRepository(runtimeConfig.MySQL)
-	warAPIClient := infracoc.New(runtimeConfig.Config.CoC)
+	warAPIClient := infracoc.New(cocapi.Config{
+		BaseURL:  runtimeConfig.Config.CoC.BaseURL,
+		APIToken: runtimeConfig.Config.CoC.APIToken,
+		Timeout:  runtimeConfig.Config.CoC.Timeout,
+	})
 	warCache := infraredis.NewWarCache(runtimeConfig.Redis)
 	warService := service.NewWarService(warAPIClient, warRepository, service.WarServiceOptions{
 		Cache:              warCache,
 		CurrentWarCacheTTL: runtimeConfig.Config.CoC.CurrentWarCacheTTL,
-		CWLGroupCacheTTL:  runtimeConfig.Config.CoC.CWLGroupCacheTTL,
+		CWLGroupCacheTTL:   runtimeConfig.Config.CoC.CWLGroupCacheTTL,
 	})
 	warController := controller.NewWarController(warService)
 

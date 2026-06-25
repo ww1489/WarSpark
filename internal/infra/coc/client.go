@@ -1,147 +1,149 @@
+// Package coc 提供 Clash of Clans API 的领域适配层。
+//
+// 本包是 pkg/cocapi(官方 swagger 类型)与 internal/domain/war(业务领域类型)之间的 adapter,
+// 实现 service.WarAPIClient interface。职责:
+//   - 调用 pkg/cocapi.Client 获取官方 API 数据
+//   - 将 cocapi 类型转换为 wardomain 类型
+//   - 将 cocapi 哨兵错误转换为 wardomain.Error(带 Code,供 controller 做 HTTP 状态码映射)
+//
+// 通过 adapter 模式隔离官方 API 类型与业务领域模型,二者可独立演进。
 package coc
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
+	"errors"
 
-	appconfig "github.com/ww1489/WarSpark/internal/config"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
+// Client 是 service.WarAPIClient 的实现,内部包装 cocapi.Client。
 type Client struct {
-	baseURL    string
-	apiToken   string
-	httpClient *http.Client
+	api *cocapi.Client
 }
 
-func New(cfg appconfig.CoCConfig) *Client {
-	return &Client{
-		baseURL:  strings.TrimRight(cfg.BaseURL, "/"),
-		apiToken: cfg.APIToken,
-		httpClient: &http.Client{
-			Timeout: cfg.Timeout,
-		},
-	}
+// New 从 cocapi.Config 构造 adapter。
+func New(cfg cocapi.Config) *Client {
+	return &Client{api: cocapi.New(cfg)}
 }
 
+// CurrentWar 获取部族当前战争,返回 wardomain.CurrentWar。
 func (c *Client) CurrentWar(ctx context.Context, clanTag string) (wardomain.CurrentWar, error) {
-	if strings.TrimSpace(c.apiToken) == "" {
-		return wardomain.CurrentWar{}, wardomain.NewError(wardomain.ErrorAPINotConfigured, "clash of clans api token is not configured")
-	}
-
-	endpoint := c.baseURL + "/clans/" + url.PathEscape(clanTag) + "/currentwar"
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	cw, err := c.api.GetCurrentWar(ctx, clanTag)
 	if err != nil {
-		return wardomain.CurrentWar{}, wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "build clash of clans api request", err)
+		return wardomain.CurrentWar{}, mapError(err)
 	}
-	request.Header.Set("Authorization", "Bearer "+c.apiToken)
-	request.Header.Set("Accept", "application/json")
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return wardomain.CurrentWar{}, wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "clash of clans api request failed", err)
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode == http.StatusForbidden || response.StatusCode == http.StatusUnauthorized {
-		return wardomain.CurrentWar{}, wardomain.NewError(wardomain.ErrorAPIAccessDenied, "clash of clans api access denied")
-	}
-	if response.StatusCode == http.StatusNotFound {
-		return wardomain.CurrentWar{}, wardomain.NewError(wardomain.ErrorWarNotFound, "current war not found")
-	}
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return wardomain.CurrentWar{}, wardomain.NewError(wardomain.ErrorAPIRequestFailed, fmt.Sprintf("clash of clans api returned status %d", response.StatusCode))
-	}
-
-	var currentWar wardomain.CurrentWar
-	if err := json.NewDecoder(response.Body).Decode(&currentWar); err != nil {
-		return wardomain.CurrentWar{}, wardomain.WrapError(wardomain.ErrorAPIResponseInvalid, "decode clash of clans api response", err)
-	}
-	return currentWar, nil
+	return toDomainCurrentWar(cw), nil
 }
 
-
-// CWLGroup fetches the current Clan War League group for a clan.
+// CWLGroup 获取部族当前 CWL 分组,返回 wardomain.CWLGroup。
+// ClanTag/ClanName 留空,由 service 层填充。
 func (c *Client) CWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error) {
-	if strings.TrimSpace(c.apiToken) == "" {
-		return wardomain.CWLGroup{}, wardomain.NewError(wardomain.ErrorAPINotConfigured, "clash of clans api token is not configured")
-	}
-
-	endpoint := c.baseURL + "/clans/" + url.PathEscape(clanTag) + "/currentwar/leaguegroup"
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	group, err := c.api.GetClanWarLeagueGroup(ctx, clanTag)
 	if err != nil {
-		return wardomain.CWLGroup{}, wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "build cwl api request", err)
+		return wardomain.CWLGroup{}, mapError(err)
 	}
-	request.Header.Set("Authorization", "Bearer "+c.apiToken)
-	request.Header.Set("Accept", "application/json")
+	return toDomainCWLGroup(group), nil
+}
 
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return wardomain.CWLGroup{}, wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "cwl api request failed", err)
+// toDomainCurrentWar 把 cocapi.ClanWar 转成 wardomain.CurrentWar。
+func toDomainCurrentWar(cw cocapi.ClanWar) wardomain.CurrentWar {
+	return wardomain.CurrentWar{
+		State:    cw.State,
+		TeamSize: cw.TeamSize,
+		Clan:     toDomainWarClan(cw.Clan),
+		Opponent: toDomainWarClan(cw.Opponent),
 	}
-	defer response.Body.Close()
+}
 
-	if response.StatusCode == http.StatusForbidden || response.StatusCode == http.StatusUnauthorized {
-		return wardomain.CWLGroup{}, wardomain.NewError(wardomain.ErrorAPIAccessDenied, "clash of clans api access denied")
+// toDomainWarClan 把 cocapi.WarClan 转成 wardomain.WarClan。
+func toDomainWarClan(wc cocapi.WarClan) wardomain.WarClan {
+	members := make([]wardomain.WarMember, 0, len(wc.Members))
+	for _, m := range wc.Members {
+		members = append(members, toDomainWarMember(m))
 	}
-	if response.StatusCode == http.StatusNotFound {
-		return wardomain.CWLGroup{}, wardomain.NewError(wardomain.ErrorWarNotFound, "cwl group not found")
+	return wardomain.WarClan{
+		Tag:                   wc.Tag,
+		Name:                  wc.Name,
+		Stars:                 wc.Stars,
+		DestructionPercentage: float64(wc.DestructionPercentage),
+		Members:               members,
 	}
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return wardomain.CWLGroup{}, wardomain.NewError(wardomain.ErrorAPIRequestFailed, fmt.Sprintf("cwl api returned status %d", response.StatusCode))
-	}
+}
 
-	var raw struct {
-		State  string `json:"state"`
-		Season string `json:"season"`
-		Clans  []struct {
-			Tag       string `json:"tag"`
-			Name      string `json:"name"`
-			ClanLevel int    `json:"clanLevel"`
-			Members   []struct {
-				Tag           string `json:"tag"`
-				Name          string `json:"name"`
-				TownHallLevel int    `json:"townHallLevel"`
-			} `json:"members"`
-			WarWins int `json:"warWins"`
-		} `json:"clans"`
-		Rounds []struct {
-			WarTags []string `json:"warTags"`
-		} `json:"rounds"`
+// toDomainWarMember 把 cocapi.ClanWarMember 转成 wardomain.WarMember。
+func toDomainWarMember(m cocapi.ClanWarMember) wardomain.WarMember {
+	attacks := make([]wardomain.WarAttack, 0, len(m.Attacks))
+	for _, a := range m.Attacks {
+		attacks = append(attacks, toDomainWarAttack(a))
 	}
-	if err := json.NewDecoder(response.Body).Decode(&raw); err != nil {
-		return wardomain.CWLGroup{}, wardomain.WrapError(wardomain.ErrorAPIResponseInvalid, "decode cwl api response", err)
+	return wardomain.WarMember{
+		Tag:           m.Tag,
+		Name:          m.Name,
+		TownHallLevel: m.TownhallLevel,
+		MapPosition:   m.MapPosition,
+		Attacks:       attacks,
 	}
+}
 
-	group := wardomain.CWLGroup{
-		State:  raw.State,
-		Season: raw.Season,
+// toDomainWarAttack 把 cocapi.ClanWarAttack 转成 wardomain.WarAttack。
+func toDomainWarAttack(a cocapi.ClanWarAttack) wardomain.WarAttack {
+	return wardomain.WarAttack{
+		AttackerTag:           a.AttackerTag,
+		DefenderTag:           a.DefenderTag,
+		Stars:                 a.Stars,
+		DestructionPercentage: float64(a.DestructionPercentage),
+		Order:                 a.Order,
+		Duration:              a.Duration,
 	}
-	for _, cl := range raw.Clans {
-		group.Clans = append(group.Clans, wardomain.CWLClan{
-			Tag:       cl.Tag,
-			Name:      cl.Name,
-			ClanLevel: cl.ClanLevel,
-			Members:   len(cl.Members),
-			WarWins:   cl.WarWins,
+}
+
+// toDomainCWLGroup 把 cocapi.ClanWarLeagueGroup 转成 wardomain.CWLGroup。
+// ClanTag/ClanName 留空(service 层负责填充)。
+func toDomainCWLGroup(g cocapi.ClanWarLeagueGroup) wardomain.CWLGroup {
+	clans := make([]wardomain.CWLClan, 0, len(g.Clans))
+	for _, c := range g.Clans {
+		clans = append(clans, wardomain.CWLClan{
+			Tag:       c.Tag,
+			Name:      c.Name,
+			ClanLevel: c.ClanLevel,
+			Members:   len(c.Members),
 		})
 	}
-	for _, r := range raw.Rounds {
-		group.Rounds = append(group.Rounds, wardomain.CWLRound{
+	rounds := make([]wardomain.CWLRound, 0, len(g.Rounds))
+	for _, r := range g.Rounds {
+		rounds = append(rounds, wardomain.CWLRound{
 			WarTags: r.WarTags,
 		})
 	}
-	return group, nil
+	return wardomain.CWLGroup{
+		State:  g.State,
+		Season: g.Season,
+		Clans:  clans,
+		Rounds: rounds,
+	}
 }
 
-func TimeoutOrDefault(value time.Duration) time.Duration {
-	if value <= 0 {
-		return 10 * time.Second
+// mapError 把 cocapi 哨兵错误转成 wardomain.Error(带 Code)。
+// controller.failWar 依赖 wardomain.Error.Code 做 HTTP 状态码映射。
+var errorMap = []struct {
+	src  error
+	code string
+}{
+	{cocapi.ErrAPINotConfigured, wardomain.ErrorAPINotConfigured},
+	{cocapi.ErrAPIAccessDenied, wardomain.ErrorAPIAccessDenied},
+	{cocapi.ErrNotFound, wardomain.ErrorWarNotFound},
+	{cocapi.ErrInvalidTag, wardomain.ErrorInvalidTag},
+	{cocapi.ErrAPIResponseInvalid, wardomain.ErrorAPIResponseInvalid},
+	{cocapi.ErrAPIRequestFailed, wardomain.ErrorAPIRequestFailed},
+	{cocapi.ErrRateLimited, wardomain.ErrorAPIRequestFailed},
+}
+
+func mapError(err error) error {
+	for _, m := range errorMap {
+		if errors.Is(err, m.src) {
+			return wardomain.WrapError(m.code, err.Error(), err)
+		}
 	}
-	return value
+	return wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "unexpected coc api error", err)
 }
