@@ -1,0 +1,307 @@
+# Clash of Clans API 端点清单(由 generate-coc-api.go 从 official-swagger.yaml 生成)
+# 权威来源: pkg/cocapi/official-swagger.yaml — 请勿手动编辑本文件
+
+endpoints:
+  - name: GetBuilderBaseLeagues
+    method: GET
+    path: /builderbaseleagues
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: BuilderBaseLeagueListResponse
+    description: "List Builder Base leagues"
+  - name: GetBuilderBaseLeague
+    method: GET
+    path: /builderbaseleagues/{leagueId}
+    params:
+      - {name: leagueId, in: path, type: string}
+    response_type: BuilderBaseLeague
+    description: "Get Builder Base league information"
+  - name: GetCapitalLeagues
+    method: GET
+    path: /capitalleagues
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: CapitalLeagueListResponse
+    description: "List capital leagues"
+  - name: GetCapitalLeague
+    method: GET
+    path: /capitalleagues/{leagueId}
+    params:
+      - {name: leagueId, in: path, type: string}
+    response_type: CapitalLeague
+    description: "Get capital league information"
+  - name: SearchClans
+    method: GET
+    path: /clans
+    params:
+      - {name: name, in: query, type: string}
+      - {name: warFrequency, in: query, type: string}
+      - {name: locationId, in: query, type: int}
+      - {name: minMembers, in: query, type: int}
+      - {name: maxMembers, in: query, type: int}
+      - {name: minClanPoints, in: query, type: int}
+      - {name: minClanLevel, in: query, type: int}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+      - {name: labelIds, in: query, type: string}
+    response_type: ClanListResponse
+    description: "Search clans"
+  - name: GetClan
+    method: GET
+    path: /clans/{clanTag}
+    params:
+      - {name: clanTag, in: path, type: string}
+    response_type: Clan
+    description: "Get clan information"
+  - name: GetCapitalRaidSeasons
+    method: GET
+    path: /clans/{clanTag}/capitalraidseasons
+    params:
+      - {name: clanTag, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanCapitalRaidSeasonsResponse
+    description: "Retrieve clan's capital raid seasons"
+  - name: GetCurrentWar
+    method: GET
+    path: /clans/{clanTag}/currentwar
+    params:
+      - {name: clanTag, in: path, type: string}
+    response_type: ClanWar
+    description: "Retrieve information about clan's current clan war"
+  - name: GetClanWarLeagueGroup
+    method: GET
+    path: /clans/{clanTag}/currentwar/leaguegroup
+    params:
+      - {name: clanTag, in: path, type: string}
+    response_type: ClanWarLeagueGroup
+    description: "Retrieve information about clan's current clan war league group"
+  - name: GetClanMembers
+    method: GET
+    path: /clans/{clanTag}/members
+    params:
+      - {name: clanTag, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanMemberListResponse
+    description: "List clan members"
+  - name: GetClanWarLog
+    method: GET
+    path: /clans/{clanTag}/warlog
+    params:
+      - {name: clanTag, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanWarLogResponse
+    description: "Retrieve clan's clan war log"
+  - name: GetClanWarLeagueWar
+    method: GET
+    path: /clanwarleagues/wars/{warTag}
+    params:
+      - {name: warTag, in: path, type: string}
+    response_type: ClanWar
+    description: "Retrieve information about individual clan war league war"
+  - name: GetCurrentGoldPassSeason
+    method: GET
+    path: /goldpass/seasons/current
+    response_type: GoldPassSeason
+    description: "Get information about the current gold pass season."
+  - name: GetClanLabels
+    method: GET
+    path: /labels/clans
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LabelListResponse
+    description: "List clan labels"
+  - name: GetPlayerLabels
+    method: GET
+    path: /labels/players
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LabelListResponse
+    description: "List player labels"
+  - name: GetLeagueGroup
+    method: GET
+    path: /leaguegroup/{leagueGroupTag}/{leagueSeasonId}
+    params:
+      - {name: leagueGroupTag, in: path, type: string}
+      - {name: leagueSeasonId, in: path, type: string}
+      - {name: playerTag, in: query, type: string}
+    response_type: LeagueGroup
+    description: "Get ranked battle league group information for season and player"
+  - name: GetLeagues
+    method: GET
+    path: /leagues
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LeagueListResponse
+    description: "List leagues"
+  - name: GetLeague
+    method: GET
+    path: /leagues/{leagueId}
+    params:
+      - {name: leagueId, in: path, type: string}
+    response_type: League
+    description: "Get league information"
+  - name: GetLeagueSeasons
+    method: GET
+    path: /leagues/{leagueId}/seasons
+    params:
+      - {name: leagueId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LeagueSeasonListResponse
+    description: "Get league seasons"
+  - name: GetLeagueSeasonRankings
+    method: GET
+    path: /leagues/{leagueId}/seasons/{seasonId}
+    params:
+      - {name: leagueId, in: path, type: string}
+      - {name: seasonId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: PlayerRankingListResponse
+    description: "Get league season rankings"
+  - name: GetLeagueTiers
+    method: GET
+    path: /leaguetiers
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LeagueTierListResponse
+    description: "List league tiers"
+  - name: GetLeagueTier
+    method: GET
+    path: /leaguetiers/{leagueTierId}
+    params:
+      - {name: leagueTierId, in: path, type: string}
+    response_type: LeagueTier
+    description: "Get league tier information"
+  - name: GetLocations
+    method: GET
+    path: /locations
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: LocationListResponse
+    description: "List locations"
+  - name: GetLocation
+    method: GET
+    path: /locations/{locationId}
+    params:
+      - {name: locationId, in: path, type: string}
+    response_type: Location
+    description: "Get location information"
+  - name: GetClanCapitalRanking
+    method: GET
+    path: /locations/{locationId}/rankings/capitals
+    params:
+      - {name: locationId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanCapitalRankingListResponse
+    description: "Get capital rankings for a specific location"
+  - name: GetClanRanking
+    method: GET
+    path: /locations/{locationId}/rankings/clans
+    params:
+      - {name: locationId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanRankingListResponse
+    description: "Get clan rankings for a specific location"
+  - name: GetClanBuilderBaseRanking
+    method: GET
+    path: /locations/{locationId}/rankings/clans-builder-base
+    params:
+      - {name: locationId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: ClanBuilderBaseRankingListResponse
+    description: "Get clan Builder Base rankings for a specific location"
+  - name: GetPlayerRanking
+    method: GET
+    path: /locations/{locationId}/rankings/players
+    params:
+      - {name: locationId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: PlayerRankingListResponse
+    description: "Get player rankings for a specific location"
+  - name: GetPlayerBuilderBaseRanking
+    method: GET
+    path: /locations/{locationId}/rankings/players-builder-base
+    params:
+      - {name: locationId, in: path, type: string}
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: PlayerBuilderBaseRankingListResponse
+    description: "Get player Builder Base rankings for a specific location"
+  - name: GetPlayer
+    method: GET
+    path: /players/{playerTag}
+    params:
+      - {name: playerTag, in: path, type: string}
+    response_type: Player
+    description: "Get player information"
+  - name: GetBattleLog
+    method: GET
+    path: /players/{playerTag}/battlelog
+    params:
+      - {name: playerTag, in: path, type: string}
+    response_type: BattleLogEntryListResponse
+    description: "Get player battle log"
+  - name: GetLeagueHistory
+    method: GET
+    path: /players/{playerTag}/leaguehistory
+    params:
+      - {name: playerTag, in: path, type: string}
+    response_type: LeagueSeasonResultListResponse
+    description: "Get player league history"
+  - name: VerifyToken
+    method: POST
+    path: /players/{playerTag}/verifytoken
+    params:
+      - {name: playerTag, in: path, type: string}
+      - {name: body, in: body, type: VerifyTokenRequest}
+    response_type: VerifyTokenResponse
+    description: "Verify player API token that can be found from the game settings."
+  - name: GetWarLeagues
+    method: GET
+    path: /warleagues
+    params:
+      - {name: limit, in: query, type: int}
+      - {name: after, in: query, type: string}
+      - {name: before, in: query, type: string}
+    response_type: WarLeagueListResponse
+    description: "List war leagues"
+  - name: GetWarLeague
+    method: GET
+    path: /warleagues/{leagueId}
+    params:
+      - {name: leagueId, in: path, type: string}
+    response_type: WarLeague
+    description: "Get war league information"
