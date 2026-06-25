@@ -156,10 +156,10 @@ func TestLayoutControllerGetLayoutReturnsNotFound(t *testing.T) {
 	}
 }
 
-
 func (f *fakeLayoutService) ListVideos(_ context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
 	return nil, nil
 }
+
 type fakeLayoutService struct {
 	filter     layoutdomain.ListFilter
 	pagination utils.Pagination

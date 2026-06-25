@@ -678,6 +678,7 @@ ORDER BY CASE lvm.match_type WHEN 'exact' THEN 1 WHEN 'similar' THEN 2 ELSE 3 EN
 	}
 	return matches, nil
 }
+
 // ListVideosByLayout returns public video matches for a layout, optionally filtered by match_group and match_type.
 func (r *LayoutRepository) ListVideosByLayout(ctx context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
 	query := `

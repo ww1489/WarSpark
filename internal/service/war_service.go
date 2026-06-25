@@ -34,7 +34,7 @@ type WarCache interface {
 type WarServiceOptions struct {
 	Cache              WarCache
 	CurrentWarCacheTTL time.Duration
-	CWLGroupCacheTTL  time.Duration
+	CWLGroupCacheTTL   time.Duration
 }
 
 type WarService struct {
@@ -42,7 +42,7 @@ type WarService struct {
 	repository         WarRepository
 	cache              WarCache
 	currentWarCacheTTL time.Duration
-	cwlGroupCacheTTL  time.Duration
+	cwlGroupCacheTTL   time.Duration
 	now                func() time.Time
 }
 
@@ -62,7 +62,7 @@ func NewWarService(client WarAPIClient, repository WarRepository, options ...War
 		repository:         repository,
 		cache:              option.Cache,
 		currentWarCacheTTL: option.CurrentWarCacheTTL,
-		cwlGroupCacheTTL:  option.CWLGroupCacheTTL,
+		cwlGroupCacheTTL:   option.CWLGroupCacheTTL,
 		now:                time.Now,
 	}
 }
@@ -95,7 +95,6 @@ func (s *WarService) FetchCurrentWar(ctx context.Context, clanTag string) (wardo
 	}
 	return snapshot, nil
 }
-
 
 func (s *WarService) FetchCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error) {
 	normalizedTag, err := NormalizeClanTag(clanTag)

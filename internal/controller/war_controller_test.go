@@ -102,10 +102,10 @@ func TestWarControllerListMembers(t *testing.T) {
 	}
 }
 
-
 func (f *fakeWarService) FetchCWLGroup(_ context.Context, clanTag string) (wardomain.CWLGroup, error) {
 	return wardomain.CWLGroup{}, nil
 }
+
 type fakeWarService struct {
 	currentWarTag string
 	currentWar    wardomain.Snapshot

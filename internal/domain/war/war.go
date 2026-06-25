@@ -137,25 +137,23 @@ type MemberListResult struct {
 	Total int
 }
 
-
-
 // CWLGroup represents the Clan War League group from the official CoC API.
 type CWLGroup struct {
-	State              string         `json:"state"`
-	Season             string         `json:"season"`
-	ClanTag            string         `json:"clanTag"`
-	ClanName           string         `json:"clanName"`
-	Clans              []CWLClan      `json:"clans"`
-	Rounds             []CWLRound     `json:"rounds"`
+	State    string     `json:"state"`
+	Season   string     `json:"season"`
+	ClanTag  string     `json:"clanTag"`
+	ClanName string     `json:"clanName"`
+	Clans    []CWLClan  `json:"clans"`
+	Rounds   []CWLRound `json:"rounds"`
 }
 
 // CWLClan is a participating clan in a CWL group.
 type CWLClan struct {
-	Tag          string `json:"tag"`
-	Name         string `json:"name"`
-	ClanLevel    int    `json:"clanLevel"`
-	Members      int    `json:"members"`
-	WarWins      int    `json:"warWins,omitempty"`
+	Tag       string `json:"tag"`
+	Name      string `json:"name"`
+	ClanLevel int    `json:"clanLevel"`
+	Members   int    `json:"members"`
+	WarWins   int    `json:"warWins,omitempty"`
 }
 
 // CWLRound represents one day/round in a CWL group.

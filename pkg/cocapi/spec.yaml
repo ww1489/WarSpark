@@ -1,4 +1,4 @@
-# Clash of Clans API 端点清单(由 generate-coc-api.go 从 official-swagger.yaml 生成)
+# Clash of Clans API 端点清单(由 cocgen 从 official-swagger.yaml 生成)
 # 权威来源: pkg/cocapi/official-swagger.yaml — 请勿手动编辑本文件
 
 endpoints:

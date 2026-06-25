@@ -94,7 +94,7 @@ type CoCConfig struct {
 	APIToken           string        `yaml:"api_token"`
 	Timeout            time.Duration `yaml:"timeout"`
 	CurrentWarCacheTTL time.Duration `yaml:"current_war_cache_ttl"`
-	CWLGroupCacheTTL  time.Duration `yaml:"cwl_group_cache_ttl"`
+	CWLGroupCacheTTL   time.Duration `yaml:"cwl_group_cache_ttl"`
 }
 
 type LogConfig struct {
@@ -200,7 +200,7 @@ func Defaults() Config {
 			BaseURL:            "https://api.clashofclans.com/v1",
 			Timeout:            10 * time.Second,
 			CurrentWarCacheTTL: 2 * time.Minute,
-			CWLGroupCacheTTL:  5 * time.Minute,
+			CWLGroupCacheTTL:   5 * time.Minute,
 		},
 		Log: LogConfig{
 			Level: "info",

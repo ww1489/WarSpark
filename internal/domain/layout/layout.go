@@ -47,6 +47,7 @@ func ValidQualityStatus(v string) bool { return validQualityStatus[v] }
 func ValidVisibility(v string) bool    { return validVisibility[v] }
 func ValidLinkStatus(v string) bool    { return validLinkStatus[v] }
 func ValidLinkType(v string) bool      { return validLinkType[v] }
+
 type ListFilter struct {
 	THLevel       *int
 	LayoutType    string

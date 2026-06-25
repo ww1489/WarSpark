@@ -49,7 +49,6 @@ func (c *WarController) GetCurrent(ctx *gin.Context) {
 	utils.OK(ctx, snapshot)
 }
 
-
 // GetCWL returns the current Clan War League group for a clan.
 //
 // @Summary Get CWL group
@@ -74,6 +73,7 @@ func (c *WarController) GetCWL(ctx *gin.Context) {
 	}
 	utils.OK(ctx, group)
 }
+
 // ListMembers returns members for a saved war snapshot.
 //
 // @Summary List war snapshot members

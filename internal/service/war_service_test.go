@@ -204,7 +204,6 @@ type fakeWarRepository struct {
 	membersResult    wardomain.MemberListResult
 }
 
-
 func (f *fakeWarAPIClient) CWLGroup(_ context.Context, clanTag string) (wardomain.CWLGroup, error) {
 	return wardomain.CWLGroup{}, nil
 }

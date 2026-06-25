@@ -17,7 +17,7 @@
 //
 // spec.yaml 是端点定义的权威来源。添加/修改端点后执行:
 //
-//	go run scripts/generate-coc-api.go
+//	go run ./cmd/warspark cocapi generate
 //
 // 重新生成 api.go。
 package cocapi

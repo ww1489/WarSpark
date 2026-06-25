@@ -55,7 +55,6 @@ func currentWarKey(clanTag string) string {
 	return "war:current:" + tag
 }
 
-
 func (c *WarCache) GetCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, bool, error) {
 	if c == nil || c.client == nil {
 		return wardomain.CWLGroup{}, false, nil

@@ -235,7 +235,6 @@ func (f *fakeLayoutRepository) ListAuditLogs(_ context.Context, pagination utils
 	return f.auditLogs, nil
 }
 
-
 func (f *fakeLayoutRepository) ListVideosByLayout(_ context.Context, layoutID, matchGroup, matchType string) ([]layoutdomain.VideoMatch, error) {
 	return nil, nil
 }

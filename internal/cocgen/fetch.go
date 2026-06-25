@@ -2,7 +2,7 @@
 // 替换 pkg/cocapi/official-swagger.yaml,自动应用已知缺陷补丁。
 //
 // 通过 cobra 子命令调用:warspark cocapi fetch --token=xxx
-// 或独立运行:go run scripts/fetch-coc-swagger.go <token>
+// 或独立运行:go run ./cmd/warspark cocapi fetch --token=xxx
 package cocgen
 
 import (

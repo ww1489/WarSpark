@@ -93,7 +93,6 @@ func (c *LayoutController) Get(ctx *gin.Context) {
 	utils.OK(ctx, detail)
 }
 
-
 // ListVideos returns public video matches for a layout, optionally filtered by match_group and match_type.
 //
 // @Summary List layout videos
