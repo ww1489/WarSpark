@@ -12,9 +12,9 @@ import (
 //
 // 用法:
 //
-//	warspark cocapi sync --token=xxx      下载最新 swagger + 重新生成代码(推荐)
-//	warspark cocapi fetch --token=xxx     只下载最新 swagger(应用补丁)
-//	warspark cocapi generate              只从已有 swagger 生成代码
+//	warspark cocapi syncapi --token=xxx  下载最新 swagger + 重新生成代码(推荐)
+//	warspark cocapi fetch --token=xxx    只下载最新 swagger(应用补丁)
+//	warspark cocapi generate             只从已有 swagger 生成代码
 //
 // token 是临时 JWT(约 1 小时有效),在 https://developer.clashofclans.com/#/account 创建,
 // 需把当前机器 IP 加入 key 白名单。不要把 token 写入配置文件或提交到仓库。
@@ -29,10 +29,10 @@ func newCocapiCommand() *cobra.Command {
 		Short: "Manage Clash of Clans API client (fetch swagger, generate code)",
 	}
 
-	// sync: fetch + generate 一条龙
+	// syncapi: fetch + generate 一条龙
 	var syncToken string
 	syncCmd := &cobra.Command{
-		Use:   "sync",
+		Use:   "syncapi",
 		Short: "Fetch latest swagger and regenerate code (recommended)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Printf("下载最新 swagger 到 %s ...\n", swaggerPath)
