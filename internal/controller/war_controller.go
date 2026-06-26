@@ -9,12 +9,15 @@ import (
 
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 type WarReader interface {
 	FetchCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, error)
 	ListMembers(ctx context.Context, snapshotID string, side string, pagination utils.Pagination) (wardomain.MemberListResult, error)
 	FetchCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, error)
+	GetWarLog(ctx context.Context, clanTag string, limit int, after, before string) (cocapi.ClanWarLogResponse, error)
+	GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanWar, error)
 }
 
 type WarController struct {
@@ -103,6 +106,34 @@ func (c *WarController) ListMembers(ctx *gin.Context) {
 		return
 	}
 	utils.OK(ctx, paginated(result.Items, pagination, result.Total))
+}
+
+func (ctl *WarController) GetWarLog(c *gin.Context) {
+	tag := c.Param("tag")
+	var query struct {
+		Limit  int    `form:"limit"`
+		After  string `form:"after"`
+		Before string `form:"before"`
+	}
+	if !utils.BindQuery(c, &query) {
+		return
+	}
+	resp, err := ctl.service.GetWarLog(c.Request.Context(), tag, query.Limit, query.After, query.Before)
+	if err != nil {
+		failWar(c, err)
+		return
+	}
+	utils.OK(c, resp)
+}
+
+func (ctl *WarController) GetCWLWar(c *gin.Context) {
+	warTag := c.Param("war_tag")
+	resp, err := ctl.service.GetCWLWar(c.Request.Context(), warTag)
+	if err != nil {
+		failWar(c, err)
+		return
+	}
+	utils.OK(c, resp)
 }
 
 func failWar(ctx *gin.Context, err error) {

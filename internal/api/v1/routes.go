@@ -45,6 +45,7 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		Cache:              warCache,
 		CurrentWarCacheTTL: runtimeConfig.Config.CoC.CurrentWarCacheTTL,
 		CWLGroupCacheTTL:   runtimeConfig.Config.CoC.CWLGroupCacheTTL,
+		CocapiClient:       cocapiClient,
 	})
 	warController := controller.NewWarController(warService)
 	clanCache := infraredis.NewClanCache(runtimeConfig.Redis)
@@ -72,7 +73,9 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		api.POST("/image-search/jobs/:job_id/retry", imageSearchController.RetryJob)
 		api.GET("/war/current", warController.GetCurrent)
 		api.GET("/war/cwl", warController.GetCWL)
+		api.GET("/war/cwl/wars/:war_tag", warController.GetCWLWar)
 		api.GET("/war/snapshots/:war_snapshot_id/members", warController.ListMembers)
+		api.GET("/clans/:tag/war-log", warController.GetWarLog)
 		api.GET("/clans/:tag", clanController.GetClan)
 		api.GET("/players/:tag", playerController.GetPlayer)
 		api.GET("/players/:tag/battle-log", playerController.GetBattleLog)

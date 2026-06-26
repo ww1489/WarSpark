@@ -165,3 +165,24 @@ type CWLRound struct {
 	WarTags []string `json:"warTags"`
 	State   string   `json:"state,omitempty"`
 }
+
+type WarLogEntry struct {
+	AttacksPerMember int         `json:"attacksPerMember"`
+	BattleModifier   string      `json:"battleModifier,omitempty"`
+	Clan             WarLogClan  `json:"clan"`
+	EndTime          string      `json:"endTime"`
+	Opponent         WarLogClan  `json:"opponent"`
+	Result           string      `json:"result"`
+	TeamSize         int         `json:"teamSize"`
+}
+
+type WarLogClan struct {
+	BadgeURLs            any     `json:"badgeUrls"`
+	ClanLevel            int     `json:"clanLevel"`
+	Stars                int     `json:"stars"`
+	Tag                  string  `json:"tag"`
+	Name                 string  `json:"name"`
+	DestructionPercentage float64 `json:"destructionPercentage"`
+	Attacks              int     `json:"attacks"`
+	ExpEarned            int     `json:"expEarned"`
+}

@@ -10,6 +10,7 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 type WarCache struct {
@@ -88,4 +89,74 @@ func cwlGroupKey(clanTag string) string {
 	tag := strings.ToUpper(strings.TrimSpace(clanTag))
 	tag = strings.TrimPrefix(tag, "#")
 	return "war:cwl:" + tag
+}
+
+func (c *WarCache) GetWarLog(ctx context.Context, clanTag string) (cocapi.ClanWarLogResponse, bool, error) {
+	if c == nil || c.client == nil {
+		return cocapi.ClanWarLogResponse{}, false, nil
+	}
+	data, err := c.client.Get(ctx, warLogKey(clanTag)).Bytes()
+	if err != nil {
+		if errors.Is(err, goredis.Nil) {
+			return cocapi.ClanWarLogResponse{}, false, nil
+		}
+		return cocapi.ClanWarLogResponse{}, false, err
+	}
+	var resp cocapi.ClanWarLogResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return cocapi.ClanWarLogResponse{}, false, err
+	}
+	return resp, true, nil
+}
+
+func (c *WarCache) SetWarLog(ctx context.Context, clanTag string, resp cocapi.ClanWarLogResponse, ttl time.Duration) error {
+	if c == nil || c.client == nil {
+		return nil
+	}
+	data, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+	return c.client.Set(ctx, warLogKey(clanTag), data, ttl).Err()
+}
+
+func warLogKey(clanTag string) string {
+	tag := strings.ToUpper(strings.TrimSpace(clanTag))
+	tag = strings.TrimPrefix(tag, "#")
+	return "war:log:" + tag
+}
+
+func (c *WarCache) GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanWar, bool, error) {
+	if c == nil || c.client == nil {
+		return cocapi.ClanWar{}, false, nil
+	}
+	data, err := c.client.Get(ctx, cwlWarKey(warTag)).Bytes()
+	if err != nil {
+		if errors.Is(err, goredis.Nil) {
+			return cocapi.ClanWar{}, false, nil
+		}
+		return cocapi.ClanWar{}, false, err
+	}
+	var resp cocapi.ClanWar
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return cocapi.ClanWar{}, false, err
+	}
+	return resp, true, nil
+}
+
+func (c *WarCache) SetCWLWar(ctx context.Context, warTag string, resp cocapi.ClanWar, ttl time.Duration) error {
+	if c == nil || c.client == nil {
+		return nil
+	}
+	data, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+	return c.client.Set(ctx, cwlWarKey(warTag), data, ttl).Err()
+}
+
+func cwlWarKey(warTag string) string {
+	tag := strings.ToUpper(strings.TrimSpace(warTag))
+	tag = strings.TrimPrefix(tag, "#")
+	return "war:cwl_war:" + tag
 }

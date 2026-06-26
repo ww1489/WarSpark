@@ -7,6 +7,7 @@ import (
 
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 func TestWarServiceFetchCurrentWarPersistsSnapshot(t *testing.T) {
@@ -229,6 +230,9 @@ type fakeWarCache struct {
 	setSnapshot wardomain.Snapshot
 	setTTL      time.Duration
 	setErr      error
+
+	warLogResp  cocapi.ClanWarLogResponse
+	cwlWarResp  cocapi.ClanWar
 }
 
 func (f *fakeWarCache) GetCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, bool, error) {
@@ -248,5 +252,80 @@ func (f *fakeWarCache) GetCWLGroup(_ context.Context, clanTag string) (wardomain
 }
 
 func (f *fakeWarCache) SetCWLGroup(_ context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error {
+	return nil
+}
+
+func TestWarServiceGetWarLog(t *testing.T) {
+	cache := &fakeWarCache{
+		getHit: true,
+	}
+	client := &fakeWarAPIClient{}
+	repository := &fakeWarRepository{}
+	service := NewWarService(client, repository, WarServiceOptions{
+		Cache: cache,
+	})
+	result, err := service.GetWarLog(context.Background(), "#AAA111", 10, "", "")
+	if err != nil {
+		t.Fatalf("GetWarLog returned error: %v", err)
+	}
+	if cache.getTag != "#AAA111" {
+		t.Fatalf("expected cache get for #AAA111, got %q", cache.getTag)
+	}
+	_ = result
+}
+
+func TestWarServiceGetWarLogInvalidTag(t *testing.T) {
+	service := NewWarService(&fakeWarAPIClient{}, &fakeWarRepository{})
+	_, err := service.GetWarLog(context.Background(), "bad tag!", 0, "", "")
+	if err == nil {
+		t.Fatal("expected invalid tag error")
+	}
+	if got := wardomain.ErrorCode(err); got != "invalid_tag" {
+		t.Fatalf("expected invalid_tag, got %q", got)
+	}
+}
+
+func TestWarServiceGetCWLWar(t *testing.T) {
+	cache := &fakeWarCache{
+		getHit: true,
+	}
+	service := NewWarService(&fakeWarAPIClient{}, &fakeWarRepository{}, WarServiceOptions{
+		Cache: cache,
+	})
+	result, err := service.GetCWLWar(context.Background(), "#WAR123")
+	if err != nil {
+		t.Fatalf("GetCWLWar returned error: %v", err)
+	}
+	_ = result
+}
+
+func TestWarServiceGetCWLWarInvalidTag(t *testing.T) {
+	service := NewWarService(&fakeWarAPIClient{}, &fakeWarRepository{})
+	_, err := service.GetCWLWar(context.Background(), "bad tag!")
+	if err == nil {
+		t.Fatal("expected invalid tag error")
+	}
+	if got := wardomain.ErrorCode(err); got != "invalid_tag" {
+		t.Fatalf("expected invalid_tag, got %q", got)
+	}
+}
+
+// extend fakeWarCache for new methods
+
+func (f *fakeWarCache) GetWarLog(_ context.Context, clanTag string) (cocapi.ClanWarLogResponse, bool, error) {
+	f.getTag = clanTag
+	return f.warLogResp, f.getHit, f.getErr
+}
+
+func (f *fakeWarCache) SetWarLog(_ context.Context, clanTag string, resp cocapi.ClanWarLogResponse, ttl time.Duration) error {
+	return nil
+}
+
+func (f *fakeWarCache) GetCWLWar(_ context.Context, warTag string) (cocapi.ClanWar, bool, error) {
+	f.getTag = warTag
+	return f.cwlWarResp, f.getHit, f.getErr
+}
+
+func (f *fakeWarCache) SetCWLWar(_ context.Context, warTag string, resp cocapi.ClanWar, ttl time.Duration) error {
 	return nil
 }

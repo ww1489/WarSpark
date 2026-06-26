@@ -12,6 +12,7 @@ import (
 
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 func TestWarControllerGetCurrentWar(t *testing.T) {
@@ -114,6 +115,17 @@ type fakeWarService struct {
 	memberSide       string
 	memberPagination utils.Pagination
 	members          wardomain.MemberListResult
+
+	warLogTag      string
+	warLogLimit    int
+	warLogAfter    string
+	warLogBefore   string
+	warLogResp     cocapi.ClanWarLogResponse
+	warLogErr      error
+
+	cwlWarTag   string
+	cwlWarResp  cocapi.ClanWar
+	cwlWarErr   error
 }
 
 func (f *fakeWarService) FetchCurrentWar(_ context.Context, clanTag string) (wardomain.Snapshot, error) {
@@ -126,6 +138,113 @@ func (f *fakeWarService) ListMembers(_ context.Context, snapshotID string, side 
 	f.memberSide = side
 	f.memberPagination = pagination
 	return f.members, nil
+}
+
+func (f *fakeWarService) GetWarLog(_ context.Context, clanTag string, limit int, after, before string) (cocapi.ClanWarLogResponse, error) {
+	f.warLogTag = clanTag
+	f.warLogLimit = limit
+	f.warLogAfter = after
+	f.warLogBefore = before
+	return f.warLogResp, f.warLogErr
+}
+
+func (f *fakeWarService) GetCWLWar(_ context.Context, warTag string) (cocapi.ClanWar, error) {
+	f.cwlWarTag = warTag
+	return f.cwlWarResp, f.cwlWarErr
+}
+
+func TestWarControllerGetWarLog(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := &fakeWarService{
+		warLogResp: cocapi.ClanWarLogResponse{
+			Items: []cocapi.ClanWarLogEntry{
+				{
+					Result:   "win",
+					TeamSize: 15,
+				},
+			},
+		},
+	}
+	controller := NewWarController(service)
+
+	router := gin.New()
+	router.GET("/api/v1/clans/:tag/war-log", controller.GetWarLog)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/clans/%23aaa111/war-log?limit=5", nil)
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", recorder.Code, recorder.Body.String())
+	}
+	if service.warLogTag != "#aaa111" {
+		t.Fatalf("expected war log tag #aaa111, got %q", service.warLogTag)
+	}
+	if service.warLogLimit != 5 {
+		t.Fatalf("expected limit 5, got %d", service.warLogLimit)
+	}
+}
+
+func TestWarControllerGetWarLogServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := &fakeWarService{
+		warLogErr: wardomain.NewError(wardomain.ErrorWarNotFound, "not found"),
+	}
+	controller := NewWarController(service)
+
+	router := gin.New()
+	router.GET("/api/v1/clans/:tag/war-log", controller.GetWarLog)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/clans/%23aaa111/war-log", nil)
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d body=%s", recorder.Code, recorder.Body.String())
+	}
+}
+
+func TestWarControllerGetCWLWar(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := &fakeWarService{
+		cwlWarResp: cocapi.ClanWar{
+			State: "inWar",
+		},
+	}
+	controller := NewWarController(service)
+
+	router := gin.New()
+	router.GET("/api/v1/war/cwl/wars/:war_tag", controller.GetCWLWar)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/war/cwl/wars/%23war123", nil)
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", recorder.Code, recorder.Body.String())
+	}
+	if service.cwlWarTag != "#war123" {
+		t.Fatalf("expected cwl war tag #war123, got %q", service.cwlWarTag)
+	}
+}
+
+func TestWarControllerGetCWLWarNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := &fakeWarService{
+		cwlWarErr: wardomain.NewError(wardomain.ErrorWarNotFound, "not found"),
+	}
+	controller := NewWarController(service)
+
+	router := gin.New()
+	router.GET("/api/v1/war/cwl/wars/:war_tag", controller.GetCWLWar)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/war/cwl/wars/%23war123", nil)
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d body=%s", recorder.Code, recorder.Body.String())
+	}
 }
 
 func ptrInt(value int) *int {
