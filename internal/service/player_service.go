@@ -3,15 +3,23 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
+
+	"github.com/google/uuid"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
 	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
+	"github.com/ww1489/WarSpark/internal/repository"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
 type cocapiPlayerClient interface {
 	GetPlayer(ctx context.Context, playerTag string) (cocapi.Player, error)
 	GetBattleLog(ctx context.Context, playerTag string) (cocapi.BattleLogEntryListResponse, error)
+}
+
+type PlayerRepository interface {
+	SaveSnapshot(ctx context.Context, input repository.SavePlayerSnapshotInput) error
 }
 
 type PlayerCache interface {
@@ -22,12 +30,13 @@ type PlayerCache interface {
 }
 
 type PlayerService struct {
-	cocapi cocapiPlayerClient
-	cache  PlayerCache
+	cocapi     cocapiPlayerClient
+	cache      PlayerCache
+	repository PlayerRepository
 }
 
-func NewPlayerService(cocapi cocapiPlayerClient, cache PlayerCache) *PlayerService {
-	return &PlayerService{cocapi: cocapi, cache: cache}
+func NewPlayerService(cocapi cocapiPlayerClient, cache PlayerCache, repository PlayerRepository) *PlayerService {
+	return &PlayerService{cocapi: cocapi, cache: cache, repository: repository}
 }
 
 func (s *PlayerService) FetchPlayer(ctx context.Context, playerTag string) (clandomain.PlayerOverview, error) {
@@ -50,6 +59,14 @@ func (s *PlayerService) FetchPlayer(ctx context.Context, playerTag string) (clan
 	overview := toDomainPlayerOverview(player)
 	if s.cache != nil {
 		_ = s.cache.SetPlayer(ctx, normalizedTag, overview)
+	}
+	if s.repository != nil {
+		_ = s.repository.SaveSnapshot(ctx, repository.SavePlayerSnapshotInput{
+			ID:        uuid.NewString(),
+			PlayerTag: normalizedTag,
+			Overview:  overview,
+			FetchedAt: time.Now().UTC().Format(time.RFC3339),
+		})
 	}
 	return overview, nil
 }

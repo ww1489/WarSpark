@@ -66,7 +66,7 @@ func (f *fakeClanCache) SetBattleLog(ctx context.Context, playerTag string, log 
 func TestClanServiceFetchReturnsCached(t *testing.T) {
 	cached := clandomain.ClanDetail{Clan: clandomain.ClanOverview{Name: "Cached"}}
 	cache := &fakeClanCache{clanDetail: cached, clanHit: true}
-	svc := NewClanService(&fakeCocapiClanClient{}, cache)
+	svc := NewClanService(&fakeCocapiClanClient{}, cache, nil)
 
 	result, err := svc.FetchClan(context.Background(), "#AAA111")
 	if err != nil {
@@ -82,7 +82,7 @@ func TestClanServiceFetchCallsAPIOnMiss(t *testing.T) {
 		clan: cocapi.Clan{Name: "TestClan", Tag: "#AAA111", ClanLevel: 10},
 	}
 	cache := &fakeClanCache{clanHit: false}
-	svc := NewClanService(api, cache)
+	svc := NewClanService(api, cache, nil)
 
 	result, err := svc.FetchClan(context.Background(), "#AAA111")
 	if err != nil {
@@ -99,7 +99,7 @@ func TestClanServiceFetchCallsAPIOnMiss(t *testing.T) {
 func TestClanServiceFetchPropagatesNotFound(t *testing.T) {
 	api := &fakeCocapiClanClient{err: cocapi.ErrNotFound}
 	cache := &fakeClanCache{clanHit: false}
-	svc := NewClanService(api, cache)
+	svc := NewClanService(api, cache, nil)
 
 	_, err := svc.FetchClan(context.Background(), "#AAA111")
 	if err == nil {
@@ -111,7 +111,7 @@ func TestClanServiceFetchPropagatesNotFound(t *testing.T) {
 }
 
 func TestClanServiceFetchRejectsInvalidTag(t *testing.T) {
-	svc := NewClanService(&fakeCocapiClanClient{}, &fakeClanCache{})
+	svc := NewClanService(&fakeCocapiClanClient{}, &fakeClanCache{}, nil)
 	_, err := svc.FetchClan(context.Background(), "bad tag!")
 	if err == nil {
 		t.Fatal("expected invalid tag error")

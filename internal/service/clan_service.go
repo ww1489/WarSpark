@@ -3,9 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
+
+	"github.com/google/uuid"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
 	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
+	"github.com/ww1489/WarSpark/internal/repository"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
@@ -14,18 +18,23 @@ type cocapiClanClient interface {
 	GetClanMembers(ctx context.Context, clanTag string, query cocapi.QueryGetClanMembers) (cocapi.ClanMemberListResponse, error)
 }
 
+type ClanRepository interface {
+	SaveSnapshot(ctx context.Context, input repository.SaveClanSnapshotInput) error
+}
+
 type ClanCache interface {
 	GetClan(ctx context.Context, clanTag string) (clandomain.ClanDetail, bool, error)
 	SetClan(ctx context.Context, clanTag string, detail clandomain.ClanDetail) error
 }
 
 type ClanService struct {
-	cocapi cocapiClanClient
-	cache  ClanCache
+	cocapi     cocapiClanClient
+	cache      ClanCache
+	repository ClanRepository
 }
 
-func NewClanService(cocapi cocapiClanClient, cache ClanCache) *ClanService {
-	return &ClanService{cocapi: cocapi, cache: cache}
+func NewClanService(cocapi cocapiClanClient, cache ClanCache, repository ClanRepository) *ClanService {
+	return &ClanService{cocapi: cocapi, cache: cache, repository: repository}
 }
 
 func (s *ClanService) FetchClan(ctx context.Context, clanTag string) (clandomain.ClanDetail, error) {
@@ -55,6 +64,14 @@ func (s *ClanService) FetchClan(ctx context.Context, clanTag string) (clandomain
 	}
 	if s.cache != nil {
 		_ = s.cache.SetClan(ctx, normalizedTag, detail)
+	}
+	if s.repository != nil {
+		_ = s.repository.SaveSnapshot(ctx, repository.SaveClanSnapshotInput{
+			ID:        uuid.NewString(),
+			ClanTag:   normalizedTag,
+			Detail:    detail,
+			FetchedAt: time.Now().UTC().Format(time.RFC3339),
+		})
 	}
 	return detail, nil
 }

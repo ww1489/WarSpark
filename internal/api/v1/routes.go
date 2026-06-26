@@ -46,10 +46,12 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		CocapiClient: cocapiClient,
 	})
 	warController := controller.NewWarController(warService)
+	clanRepository := repository.NewClanRepository(runtimeConfig.MySQL)
+	playerRepository := repository.NewPlayerRepository(runtimeConfig.MySQL)
 	clanCache := infraredis.NewClanCache(runtimeConfig.Redis, 5*time.Minute)
-	clanService := service.NewClanService(cocapiClient, clanCache)
+	clanService := service.NewClanService(cocapiClient, clanCache, clanRepository)
 	clanController := controller.NewClanController(clanService)
-	playerService := service.NewPlayerService(cocapiClient, clanCache)
+	playerService := service.NewPlayerService(cocapiClient, clanCache, playerRepository)
 	playerController := controller.NewPlayerController(playerService)
 
 	router.GET("/health", healthController.Check)

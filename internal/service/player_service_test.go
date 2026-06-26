@@ -29,7 +29,7 @@ func (f *fakeCocapiPlayerClient) GetBattleLog(ctx context.Context, playerTag str
 func TestPlayerServiceFetchReturnsCached(t *testing.T) {
 	cached := clandomain.PlayerOverview{Name: "Cached"}
 	cache := &fakeClanCache{playerOverview: cached, playerHit: true}
-	svc := NewPlayerService(&fakeCocapiPlayerClient{}, cache)
+	svc := NewPlayerService(&fakeCocapiPlayerClient{}, cache, nil)
 
 	result, err := svc.FetchPlayer(context.Background(), "#ABC123")
 	if err != nil {
@@ -45,7 +45,7 @@ func TestPlayerServiceFetchCallsAPIOnMiss(t *testing.T) {
 		player: cocapi.Player{Name: "TestPlayer", Tag: "#ABC123", TownHallLevel: 15},
 	}
 	cache := &fakeClanCache{playerHit: false}
-	svc := NewPlayerService(api, cache)
+	svc := NewPlayerService(api, cache, nil)
 
 	result, err := svc.FetchPlayer(context.Background(), "#ABC123")
 	if err != nil {
@@ -63,7 +63,7 @@ func TestPlayerServiceFetchBattleLog(t *testing.T) {
 		},
 	}
 	cache := &fakeClanCache{battleLogHit: false}
-	svc := NewPlayerService(api, cache)
+	svc := NewPlayerService(api, cache, nil)
 
 	result, err := svc.FetchBattleLog(context.Background(), "#ABC123")
 	if err != nil {
@@ -77,7 +77,7 @@ func TestPlayerServiceFetchBattleLog(t *testing.T) {
 func TestPlayerServiceFetchPropagatesNotFound(t *testing.T) {
 	api := &fakeCocapiPlayerClient{err: cocapi.ErrNotFound}
 	cache := &fakeClanCache{playerHit: false}
-	svc := NewPlayerService(api, cache)
+	svc := NewPlayerService(api, cache, nil)
 
 	_, err := svc.FetchPlayer(context.Background(), "#ABC123")
 	if err == nil {
@@ -89,7 +89,7 @@ func TestPlayerServiceFetchPropagatesNotFound(t *testing.T) {
 }
 
 func TestPlayerServiceFetchRejectsInvalidTag(t *testing.T) {
-	svc := NewPlayerService(&fakeCocapiPlayerClient{}, &fakeClanCache{})
+	svc := NewPlayerService(&fakeCocapiPlayerClient{}, &fakeClanCache{}, nil)
 	_, err := svc.FetchPlayer(context.Background(), "bad tag!")
 	if err == nil {
 		t.Fatal("expected invalid tag error")

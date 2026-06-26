@@ -87,17 +87,17 @@ func TestCode(t *testing.T) {
 func TestErrorCodeConstants(t *testing.T) {
 	// Verify all constants have values
 	codes := map[string]string{
-		"invalid_tag":           ErrCodeInvalidTag,
-		"api_not_configured":    ErrCodeAPINotConfigured,
-		"api_request_failed":    ErrCodeAPIRequestFailed,
-		"api_access_denied":     ErrCodeAPIAccessDenied,
-		"war_not_found":         ErrCodeWarNotFound,
-		"api_response_invalid":  ErrCodeAPIResponseInvalid,
-		"snapshot_not_found":    ErrCodeSnapshotNotFound,
-		"clan_not_found":        ErrCodeClanNotFound,
-		"player_not_found":      ErrCodePlayerNotFound,
-		"league_not_found":      ErrCodeLeagueNotFound,
-		"location_not_found":    ErrCodeLocationNotFound,
+		"invalid_tag":          ErrCodeInvalidTag,
+		"api_not_configured":   ErrCodeAPINotConfigured,
+		"api_request_failed":   ErrCodeAPIRequestFailed,
+		"api_access_denied":    ErrCodeAPIAccessDenied,
+		"war_not_found":        ErrCodeWarNotFound,
+		"api_response_invalid": ErrCodeAPIResponseInvalid,
+		"snapshot_not_found":   ErrCodeSnapshotNotFound,
+		"clan_not_found":       ErrCodeClanNotFound,
+		"player_not_found":     ErrCodePlayerNotFound,
+		"league_not_found":     ErrCodeLeagueNotFound,
+		"location_not_found":   ErrCodeLocationNotFound,
 	}
 	for expect, actual := range codes {
 		if actual != expect {
