@@ -1,0 +1,191 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"strings"
+	"time"
+
+	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
+
+	"github.com/ww1489/WarSpark/internal/domain/capital"
+	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+)
+
+type capitalCache interface {
+	GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, bool, error)
+	SetCapitalRaidSeasons(ctx context.Context, clanTag string, resp capital.CapitalRaidSeasonListResponse, ttl time.Duration) error
+	GetCapitalLeagues(ctx context.Context) (capital.CapitalLeagueListResponse, bool, error)
+	SetCapitalLeagues(ctx context.Context, resp capital.CapitalLeagueListResponse, ttl time.Duration) error
+	GetCapitalLeague(ctx context.Context, leagueID string) (capital.CapitalLeague, bool, error)
+	SetCapitalLeague(ctx context.Context, leagueID string, resp capital.CapitalLeague, ttl time.Duration) error
+	GetBuilderBaseLeagues(ctx context.Context) (capital.BuilderBaseLeagueListResponse, bool, error)
+	SetBuilderBaseLeagues(ctx context.Context, resp capital.BuilderBaseLeagueListResponse, ttl time.Duration) error
+	GetBuilderBaseLeague(ctx context.Context, leagueID string) (capital.BuilderBaseLeague, bool, error)
+	SetBuilderBaseLeague(ctx context.Context, leagueID string, resp capital.BuilderBaseLeague, ttl time.Duration) error
+}
+
+type cocapiCapitalClient interface {
+	GetBuilderBaseLeagues(ctx context.Context, query cocapi.QueryGetBuilderBaseLeagues) (cocapi.BuilderBaseLeagueListResponse, error)
+	GetBuilderBaseLeague(ctx context.Context, leagueId string) (cocapi.BuilderBaseLeague, error)
+	GetCapitalLeagues(ctx context.Context, query cocapi.QueryGetCapitalLeagues) (cocapi.CapitalLeagueListResponse, error)
+	GetCapitalLeague(ctx context.Context, leagueId string) (cocapi.CapitalLeague, error)
+	GetCapitalRaidSeasons(ctx context.Context, clanTag string, query cocapi.QueryGetCapitalRaidSeasons) (cocapi.ClanCapitalRaidSeasonsResponse, error)
+}
+
+type CapitalService struct {
+	cocapi        cocapiCapitalClient
+	cache         capitalCache
+	raidSeasonTTL time.Duration
+	leagueTTL     time.Duration
+}
+
+func NewCapitalService(cocapi cocapiCapitalClient, cache capitalCache, raidSeasonTTL, leagueTTL time.Duration) *CapitalService {
+	if raidSeasonTTL <= 0 {
+		raidSeasonTTL = 5 * time.Minute
+	}
+	if leagueTTL <= 0 {
+		leagueTTL = 30 * time.Minute
+	}
+	return &CapitalService{cocapi: cocapi, cache: cache, raidSeasonTTL: raidSeasonTTL, leagueTTL: leagueTTL}
+}
+
+func (s *CapitalService) GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, error) {
+	if clanTag == "" || !strings.HasPrefix(clanTag, "#") {
+		return capital.CapitalRaidSeasonListResponse{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid clan tag")
+	}
+	if s.cache != nil {
+		resp, ok, err := s.cache.GetCapitalRaidSeasons(ctx, clanTag)
+		if err == nil && ok {
+			return resp, nil
+		}
+	}
+	cocapiResp, err := s.cocapi.GetCapitalRaidSeasons(ctx, clanTag, cocapi.QueryGetCapitalRaidSeasons{})
+	if err != nil {
+		return capital.CapitalRaidSeasonListResponse{}, mapCocapiCapitalError(err)
+	}
+	resp := capital.CapitalRaidSeasonListResponse{Paging: toDomainCapitalPaging(cocapiResp.Paging)}
+	for _, item := range cocapiResp.Items {
+		d, err := toDomainCapitalRaidSeason(item)
+		if err != nil {
+			return capital.CapitalRaidSeasonListResponse{}, err
+		}
+		resp.Items = append(resp.Items, d)
+	}
+	if s.cache != nil {
+		_ = s.cache.SetCapitalRaidSeasons(ctx, clanTag, resp, s.raidSeasonTTL)
+	}
+	return resp, nil
+}
+
+func (s *CapitalService) GetCapitalLeagues(ctx context.Context) (capital.CapitalLeagueListResponse, error) {
+	if s.cache != nil {
+		resp, ok, err := s.cache.GetCapitalLeagues(ctx)
+		if err == nil && ok {
+			return resp, nil
+		}
+	}
+	cocapiResp, err := s.cocapi.GetCapitalLeagues(ctx, cocapi.QueryGetCapitalLeagues{})
+	if err != nil {
+		return capital.CapitalLeagueListResponse{}, mapCocapiCapitalError(err)
+	}
+	resp := capital.CapitalLeagueListResponse{Paging: toDomainCapitalPaging(cocapiResp.Paging)}
+	for _, item := range cocapiResp.Items {
+		resp.Items = append(resp.Items, toDomainCapitalLeague(item))
+	}
+	if s.cache != nil {
+		_ = s.cache.SetCapitalLeagues(ctx, resp, s.leagueTTL)
+	}
+	return resp, nil
+}
+
+func (s *CapitalService) GetCapitalLeague(ctx context.Context, leagueID string) (capital.CapitalLeague, error) {
+	if leagueID == "" {
+		return capital.CapitalLeague{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid league id")
+	}
+	if s.cache != nil {
+		resp, ok, err := s.cache.GetCapitalLeague(ctx, leagueID)
+		if err == nil && ok {
+			return resp, nil
+		}
+	}
+	cocapiResp, err := s.cocapi.GetCapitalLeague(ctx, leagueID)
+	if err != nil {
+		return capital.CapitalLeague{}, mapCocapiCapitalError(err)
+	}
+	resp := toDomainCapitalLeague(cocapiResp)
+	if s.cache != nil {
+		_ = s.cache.SetCapitalLeague(ctx, leagueID, resp, s.leagueTTL)
+	}
+	return resp, nil
+}
+
+func (s *CapitalService) GetBuilderBaseLeagues(ctx context.Context) (capital.BuilderBaseLeagueListResponse, error) {
+	if s.cache != nil {
+		resp, ok, err := s.cache.GetBuilderBaseLeagues(ctx)
+		if err == nil && ok {
+			return resp, nil
+		}
+	}
+	cocapiResp, err := s.cocapi.GetBuilderBaseLeagues(ctx, cocapi.QueryGetBuilderBaseLeagues{})
+	if err != nil {
+		return capital.BuilderBaseLeagueListResponse{}, mapCocapiCapitalError(err)
+	}
+	resp := capital.BuilderBaseLeagueListResponse{Paging: toDomainCapitalPaging(cocapiResp.Paging)}
+	for _, item := range cocapiResp.Items {
+		resp.Items = append(resp.Items, toDomainBuilderBaseLeague(item))
+	}
+	if s.cache != nil {
+		_ = s.cache.SetBuilderBaseLeagues(ctx, resp, s.leagueTTL)
+	}
+	return resp, nil
+}
+
+func (s *CapitalService) GetBuilderBaseLeague(ctx context.Context, leagueID string) (capital.BuilderBaseLeague, error) {
+	if leagueID == "" {
+		return capital.BuilderBaseLeague{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid league id")
+	}
+	if s.cache != nil {
+		resp, ok, err := s.cache.GetBuilderBaseLeague(ctx, leagueID)
+		if err == nil && ok {
+			return resp, nil
+		}
+	}
+	cocapiResp, err := s.cocapi.GetBuilderBaseLeague(ctx, leagueID)
+	if err != nil {
+		return capital.BuilderBaseLeague{}, mapCocapiCapitalError(err)
+	}
+	resp := toDomainBuilderBaseLeague(cocapiResp)
+	if s.cache != nil {
+		_ = s.cache.SetBuilderBaseLeague(ctx, leagueID, resp, s.leagueTTL)
+	}
+	return resp, nil
+}
+
+func toDomainCapitalLeague(l cocapi.CapitalLeague) capital.CapitalLeague {
+	return capital.CapitalLeague{ID: l.ID, Name: string(l.Name)}
+}
+
+func toDomainBuilderBaseLeague(l cocapi.BuilderBaseLeague) capital.BuilderBaseLeague {
+	return capital.BuilderBaseLeague{ID: l.ID, Name: string(l.Name)}
+}
+
+func toDomainCapitalRaidSeason(s cocapi.ClanCapitalRaidSeason) (capital.CapitalRaidSeason, error) {
+	data, err := json.Marshal(s)
+	if err != nil {
+		return capital.CapitalRaidSeason{}, err
+	}
+	var d capital.CapitalRaidSeason
+	if err := json.Unmarshal(data, &d); err != nil {
+		return capital.CapitalRaidSeason{}, err
+	}
+	return d, nil
+}
+
+func toDomainCapitalPaging(p cocapi.Paging) capital.Paging {
+	return capital.Paging{Cursors: capital.PagingCursors{After: p.Cursors.After, Before: p.Cursors.Before}}
+}
+
+func mapCocapiCapitalError(err error) error {
+	return mapCocapiRankingError(err, "")
+}

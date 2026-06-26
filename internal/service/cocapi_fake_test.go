@@ -22,9 +22,14 @@ type fakeCocapiClient struct {
 	leagueHistory  cocapi.LeagueSeasonResultListResponse
 	warLeagues     cocapi.WarLeagueListResponse
 	warLeague      cocapi.WarLeague
-	clanLabels     cocapi.LabelListResponse
-	playerLabels   cocapi.LabelListResponse
-	err            error
+	clanLabels         cocapi.LabelListResponse
+	playerLabels       cocapi.LabelListResponse
+	builderBaseLeagues cocapi.BuilderBaseLeagueListResponse
+	builderBaseLeague  cocapi.BuilderBaseLeague
+	capitalLeagues     cocapi.CapitalLeagueListResponse
+	capitalLeague      cocapi.CapitalLeague
+	capitalRaidSeasons cocapi.ClanCapitalRaidSeasonsResponse
+	err                error
 }
 
 func (f *fakeCocapiClient) GetLocations(ctx context.Context, query cocapi.QueryGetLocations) (cocapi.LocationListResponse, error) {
@@ -80,19 +85,19 @@ func (f *fakeCocapiClient) GetPlayerLabels(ctx context.Context, query cocapi.Que
 }
 
 func (f *fakeCocapiClient) GetBuilderBaseLeagues(ctx context.Context, query cocapi.QueryGetBuilderBaseLeagues) (cocapi.BuilderBaseLeagueListResponse, error) {
-	return cocapi.BuilderBaseLeagueListResponse{}, nil
+	return f.builderBaseLeagues, f.err
 }
 
 func (f *fakeCocapiClient) GetBuilderBaseLeague(ctx context.Context, leagueId string) (cocapi.BuilderBaseLeague, error) {
-	return cocapi.BuilderBaseLeague{}, nil
+	return f.builderBaseLeague, f.err
 }
 
 func (f *fakeCocapiClient) GetCapitalLeagues(ctx context.Context, query cocapi.QueryGetCapitalLeagues) (cocapi.CapitalLeagueListResponse, error) {
-	return cocapi.CapitalLeagueListResponse{}, nil
+	return f.capitalLeagues, f.err
 }
 
 func (f *fakeCocapiClient) GetCapitalLeague(ctx context.Context, leagueId string) (cocapi.CapitalLeague, error) {
-	return cocapi.CapitalLeague{}, nil
+	return f.capitalLeague, f.err
 }
 
 func (f *fakeCocapiClient) SearchClans(ctx context.Context, query cocapi.QuerySearchClans) (cocapi.ClanListResponse, error) {
@@ -100,7 +105,7 @@ func (f *fakeCocapiClient) SearchClans(ctx context.Context, query cocapi.QuerySe
 }
 
 func (f *fakeCocapiClient) GetCapitalRaidSeasons(ctx context.Context, clanTag string, query cocapi.QueryGetCapitalRaidSeasons) (cocapi.ClanCapitalRaidSeasonsResponse, error) {
-	return cocapi.ClanCapitalRaidSeasonsResponse{}, nil
+	return f.capitalRaidSeasons, f.err
 }
 
 func (f *fakeCocapiClient) GetClanWarLog(ctx context.Context, clanTag string, query cocapi.QueryGetClanWarLog) (cocapi.ClanWarLogResponse, error) {
