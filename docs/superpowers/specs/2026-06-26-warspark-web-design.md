@@ -119,6 +119,63 @@ __root.tsx
 - 服务端数据：TanStack Query（缓存、重试、自动刷新）
 - UI 状态：URL search params + React useState（无需全局状态库）
 
+## 设计系统
+
+参考 RunnerGo (runnergo.com) 的 SaaS 风格。
+
+### 配色
+
+| Token | 值 | 用途 |
+|-------|-----|------|
+| `--primary` | `#3A4DF0` | 主色调，品牌蓝 |
+| `--primary-light` | `#8E9AFF` | 主色浅色变体 |
+| `--accent-start` | `#3A4DF0` | 渐变起 |
+| `--accent-end` | `#8E9AFF` | 渐变止（按钮/头部） |
+| `--bg-page` | `#F7F9FD` | 页面背景（浅蓝灰） |
+| `--bg-card` | `#FFFFFF` | 卡片/内容区背景 |
+| `--text-primary` | `#1A1A2E` | 主文字 |
+| `--text-secondary` | `#6B7280` | 次要文字 |
+| `--border` | `#E5E7EB` | 边框/分割线 |
+| `--shadow` | `#DCE8FF` | 卡片投影色 |
+
+### 圆角
+
+- 大按钮/Card：`12px`
+- 小按钮/Badge：`8px`
+- 输入框：`8px`
+
+### 字体
+
+- 标题：Inter / 系统默认 sans-serif，`font-semibold`
+- 正文：Inter，`text-sm` / `text-base`
+- 数据/数字：Tabular Nums（等宽数字，排名表格用）
+
+### 间距
+
+- 页面内容区最大宽度：`1280px`，居中
+- 卡片间距：`gap-6`（24px）
+- 区块间距：`py-12`（48px 上下）
+
+### Tailwind 配置
+
+```ts
+// tailwind.config.ts
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary: { DEFAULT: '#3A4DF0', light: '#8E9AFF', dark: '#2E3DC4' },
+        accent: { DEFAULT: '#F05B3A', light: '#FDBD41' },
+        surface: { page: '#F7F9FD', card: '#FFFFFF' },
+      },
+      borderRadius: { btn: '12px', card: '12px', tag: '8px' },
+      boxShadow: { card: '0 2px 12px rgba(220, 232, 255, 0.5)' },
+      maxWidth: { page: '1280px' },
+    }
+  }
+}
+```
+
 ## 非目标（YAGNI）
 
 - 不做 PWA / Service Worker
