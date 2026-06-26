@@ -7,8 +7,8 @@ import (
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/utility"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 )
 
 type utilityCache interface {
@@ -71,7 +71,7 @@ func (s *UtilityService) SearchClans(ctx context.Context, params utility.ClanSea
 	}
 	resp, err := s.api.SearchClans(ctx, query)
 	if err != nil {
-		return cocapi.ClanListResponse{}, mapCocapiUtilityError(err, wardomain.ErrorClanNotFound)
+		return cocapi.ClanListResponse{}, mapCocapiUtilityError(err, dmerrors.ErrCodeClanNotFound)
 	}
 	return resp, nil
 }
@@ -79,7 +79,7 @@ func (s *UtilityService) SearchClans(ctx context.Context, params utility.ClanSea
 func (s *UtilityService) GetLocation(ctx context.Context, locationID string) (cocapi.Location, error) {
 	resp, err := s.api.GetLocation(ctx, locationID)
 	if err != nil {
-		return cocapi.Location{}, mapCocapiUtilityError(err, wardomain.ErrorLocationNotFound)
+		return cocapi.Location{}, mapCocapiUtilityError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	return resp, nil
 }
@@ -88,18 +88,18 @@ func (s *UtilityService) VerifyPlayerToken(ctx context.Context, playerTag, token
 	body := cocapi.VerifyTokenRequest{Token: token}
 	resp, err := s.api.VerifyToken(ctx, playerTag, body)
 	if err != nil {
-		return cocapi.VerifyTokenResponse{}, mapCocapiUtilityError(err, wardomain.ErrorPlayerNotFound)
+		return cocapi.VerifyTokenResponse{}, mapCocapiUtilityError(err, dmerrors.ErrCodePlayerNotFound)
 	}
 	return resp, nil
 }
 
 func (s *UtilityService) GetPlayerLeagueGroup(ctx context.Context, playerTag string) (utility.PlayerLeagueGroup, error) {
 	if playerTag == "" {
-		return utility.PlayerLeagueGroup{}, wardomain.NewError(wardomain.ErrorInvalidTag, "player tag is required")
+		return utility.PlayerLeagueGroup{}, dmerrors.New(dmerrors.ErrCodeInvalidTag, "player tag is required")
 	}
 	player, err := s.api.GetPlayer(ctx, playerTag)
 	if err != nil {
-		return utility.PlayerLeagueGroup{}, mapCocapiUtilityError(err, wardomain.ErrorPlayerNotFound)
+		return utility.PlayerLeagueGroup{}, mapCocapiUtilityError(err, dmerrors.ErrCodePlayerNotFound)
 	}
 	if player.CurrentLeagueGroupTag == "" {
 		return utility.PlayerLeagueGroup{}, nil
@@ -155,21 +155,21 @@ func mapCocapiUtilityError(err error, notFoundCode string) error {
 	switch {
 	case errors.Is(err, cocapi.ErrNotFound):
 		if notFoundCode != "" {
-			return wardomain.NewError(notFoundCode, err.Error())
+			return dmerrors.New(notFoundCode, err.Error())
 		}
 		return err
 	case errors.Is(err, cocapi.ErrInvalidTag):
-		return wardomain.NewError(wardomain.ErrorInvalidTag, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeInvalidTag, err.Error())
 	case errors.Is(err, cocapi.ErrAPINotConfigured):
-		return wardomain.NewError(wardomain.ErrorAPINotConfigured, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPINotConfigured, err.Error())
 	case errors.Is(err, cocapi.ErrAPIAccessDenied):
-		return wardomain.NewError(wardomain.ErrorAPIAccessDenied, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIAccessDenied, err.Error())
 	case errors.Is(err, cocapi.ErrAPIRequestFailed):
-		return wardomain.NewError(wardomain.ErrorAPIRequestFailed, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 	case errors.Is(err, cocapi.ErrRateLimited):
-		return wardomain.NewError(wardomain.ErrorAPIRequestFailed, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 	case errors.Is(err, cocapi.ErrAPIResponseInvalid):
-		return wardomain.NewError(wardomain.ErrorAPIResponseInvalid, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIResponseInvalid, err.Error())
 	default:
 		return err
 	}

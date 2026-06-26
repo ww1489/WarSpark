@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/ranking"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 )
 
@@ -147,14 +147,14 @@ func (c *RankingController) GetPlayerBuilderBaseRanking(ctx *gin.Context) {
 }
 
 func failRanking(ctx *gin.Context, err error) {
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if errors.As(err, &warErr) {
 		switch warErr.Code {
-		case wardomain.ErrorLocationNotFound:
+		case dmerrors.ErrCodeLocationNotFound:
 			utils.JSON(ctx, http.StatusNotFound, int(utils.ErrNotFound), warErr.Code, nil)
-		case wardomain.ErrorAPINotConfigured:
+		case dmerrors.ErrCodeAPINotConfigured:
 			utils.JSON(ctx, http.StatusServiceUnavailable, int(utils.ErrInternal), warErr.Code, nil)
-		case wardomain.ErrorAPIAccessDenied:
+		case dmerrors.ErrCodeAPIAccessDenied:
 			utils.JSON(ctx, http.StatusForbidden, int(utils.ErrForbidden), warErr.Code, nil)
 		default:
 			utils.JSON(ctx, http.StatusBadGateway, int(utils.ErrInternal), warErr.Code, nil)

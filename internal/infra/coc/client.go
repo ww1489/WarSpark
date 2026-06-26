@@ -4,7 +4,7 @@
 // 实现 service.WarAPIClient interface。职责:
 //   - 调用 pkg/cocapi.Client 获取官方 API 数据
 //   - 将 cocapi 类型转换为 wardomain 类型
-//   - 将 cocapi 哨兵错误转换为 wardomain.Error(带 Code,供 controller 做 HTTP 状态码映射)
+//   - 将 cocapi 哨兵错误转换为 dmerrors.Error(带 Code,供 controller 做 HTTP 状态码映射)
 //
 // 通过 adapter 模式隔离官方 API 类型与业务领域模型,二者可独立演进。
 package coc
@@ -14,6 +14,7 @@ import (
 	"errors"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
@@ -50,11 +51,11 @@ func (c *Client) CWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGro
 func (c *Client) Clan(ctx context.Context, clanTag string) (clandomain.ClanDetail, error) {
 	clan, err := c.api.GetClan(ctx, clanTag)
 	if err != nil {
-		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, wardomain.ErrorClanNotFound)
+		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, dmerrors.ErrCodeClanNotFound)
 	}
 	membersResp, err := c.api.GetClanMembers(ctx, clanTag, cocapi.QueryGetClanMembers{})
 	if err != nil {
-		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, wardomain.ErrorClanNotFound)
+		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, dmerrors.ErrCodeClanNotFound)
 	}
 	return clandomain.ClanDetail{
 		Clan:    toDomainClanOverview(clan),
@@ -65,7 +66,7 @@ func (c *Client) Clan(ctx context.Context, clanTag string) (clandomain.ClanDetai
 func (c *Client) Player(ctx context.Context, playerTag string) (clandomain.PlayerOverview, error) {
 	player, err := c.api.GetPlayer(ctx, playerTag)
 	if err != nil {
-		return clandomain.PlayerOverview{}, mapErrorWithNotFound(err, wardomain.ErrorPlayerNotFound)
+		return clandomain.PlayerOverview{}, mapErrorWithNotFound(err, dmerrors.ErrCodePlayerNotFound)
 	}
 	return toDomainPlayerOverview(player), nil
 }
@@ -73,7 +74,7 @@ func (c *Client) Player(ctx context.Context, playerTag string) (clandomain.Playe
 func (c *Client) BattleLog(ctx context.Context, playerTag string) (clandomain.BattleLogSummary, error) {
 	log, err := c.api.GetBattleLog(ctx, playerTag)
 	if err != nil {
-		return clandomain.BattleLogSummary{}, mapErrorWithNotFound(err, wardomain.ErrorPlayerNotFound)
+		return clandomain.BattleLogSummary{}, mapErrorWithNotFound(err, dmerrors.ErrCodePlayerNotFound)
 	}
 	return toDomainBattleLog(log), nil
 }
@@ -156,35 +157,35 @@ func toDomainCWLGroup(g cocapi.ClanWarLeagueGroup) wardomain.CWLGroup {
 	}
 }
 
-// mapError 把 cocapi 哨兵错误转成 wardomain.Error(带 Code)。
-// controller.failWar 依赖 wardomain.Error.Code 做 HTTP 状态码映射。
+// mapError 把 cocapi 哨兵错误转成 dmerrors.Error(带 Code)。
+// controller.failWar 依赖 dmerrors.Error.Code 做 HTTP 状态码映射。
 var errorMap = []struct {
 	src  error
 	code string
 }{
-	{cocapi.ErrAPINotConfigured, wardomain.ErrorAPINotConfigured},
-	{cocapi.ErrAPIAccessDenied, wardomain.ErrorAPIAccessDenied},
-	{cocapi.ErrNotFound, wardomain.ErrorWarNotFound},
-	{cocapi.ErrInvalidTag, wardomain.ErrorInvalidTag},
-	{cocapi.ErrAPIResponseInvalid, wardomain.ErrorAPIResponseInvalid},
-	{cocapi.ErrAPIRequestFailed, wardomain.ErrorAPIRequestFailed},
-	{cocapi.ErrRateLimited, wardomain.ErrorAPIRequestFailed},
+	{cocapi.ErrAPINotConfigured, dmerrors.ErrCodeAPINotConfigured},
+	{cocapi.ErrAPIAccessDenied, dmerrors.ErrCodeAPIAccessDenied},
+	{cocapi.ErrNotFound, dmerrors.ErrCodeWarNotFound},
+	{cocapi.ErrInvalidTag, dmerrors.ErrCodeInvalidTag},
+	{cocapi.ErrAPIResponseInvalid, dmerrors.ErrCodeAPIResponseInvalid},
+	{cocapi.ErrAPIRequestFailed, dmerrors.ErrCodeAPIRequestFailed},
+	{cocapi.ErrRateLimited, dmerrors.ErrCodeAPIRequestFailed},
 }
 
 func mapError(err error) error {
 	for _, m := range errorMap {
 		if errors.Is(err, m.src) {
-			return wardomain.WrapError(m.code, err.Error(), err)
+			return dmerrors.Wrap(m.code, err.Error(), err)
 		}
 	}
-	return wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "unexpected coc api error", err)
+	return dmerrors.Wrap(dmerrors.ErrCodeAPIRequestFailed, "unexpected coc api error", err)
 }
 
 func mapErrorWithNotFound(err error, notFoundCode string) error {
 	mapped := mapError(err)
-	var warErr wardomain.Error
-	if errors.As(mapped, &warErr) && warErr.Code == wardomain.ErrorWarNotFound {
-		return wardomain.WrapError(notFoundCode, err.Error(), err)
+	var warErr dmerrors.Error
+	if errors.As(mapped, &warErr) && warErr.Code == dmerrors.ErrCodeWarNotFound {
+		return dmerrors.Wrap(notFoundCode, err.Error(), err)
 	}
 	return mapped
 }

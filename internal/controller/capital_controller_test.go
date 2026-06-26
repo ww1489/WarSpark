@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ww1489/WarSpark/internal/domain/capital"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type fakeCapitalService struct {
@@ -57,7 +57,7 @@ func TestCapitalControllerGetCapitalRaidSeasons(t *testing.T) {
 
 func TestCapitalControllerGetCapitalRaidSeasonsError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeCapitalService{err: wardomain.NewError(wardomain.ErrorInvalidTag, "bad tag")}
+	svc := &fakeCapitalService{err: dmerrors.New(dmerrors.ErrCodeInvalidTag, "bad tag")}
 	ctrl := NewCapitalController(svc)
 	router := gin.New()
 	router.GET("/clans/:tag/capital-raid-seasons", ctrl.GetCapitalRaidSeasons)
@@ -89,7 +89,7 @@ func TestCapitalControllerGetCapitalLeagues(t *testing.T) {
 
 func TestCapitalControllerGetCapitalLeaguesError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeCapitalService{err: wardomain.NewError(wardomain.ErrorAPINotConfigured, "not configured")}
+	svc := &fakeCapitalService{err: dmerrors.New(dmerrors.ErrCodeAPINotConfigured, "not configured")}
 	ctrl := NewCapitalController(svc)
 	router := gin.New()
 	router.GET("/capital-leagues", ctrl.GetCapitalLeagues)
@@ -117,7 +117,7 @@ func TestCapitalControllerGetCapitalLeague(t *testing.T) {
 
 func TestCapitalControllerGetCapitalLeagueError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeCapitalService{err: wardomain.NewError(wardomain.ErrorAPIAccessDenied, "denied")}
+	svc := &fakeCapitalService{err: dmerrors.New(dmerrors.ErrCodeAPIAccessDenied, "denied")}
 	ctrl := NewCapitalController(svc)
 	router := gin.New()
 	router.GET("/capital-leagues/:id", ctrl.GetCapitalLeague)
@@ -149,7 +149,7 @@ func TestCapitalControllerGetBuilderBaseLeagues(t *testing.T) {
 
 func TestCapitalControllerGetBuilderBaseLeaguesError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeCapitalService{err: wardomain.NewError(wardomain.ErrorAPIRequestFailed, "bad gateway")}
+	svc := &fakeCapitalService{err: dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, "bad gateway")}
 	ctrl := NewCapitalController(svc)
 	router := gin.New()
 	router.GET("/builder-base-leagues", ctrl.GetBuilderBaseLeagues)
@@ -177,7 +177,7 @@ func TestCapitalControllerGetBuilderBaseLeague(t *testing.T) {
 
 func TestCapitalControllerGetBuilderBaseLeagueError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeCapitalService{err: wardomain.NewError(wardomain.ErrorWarNotFound, "not found")}
+	svc := &fakeCapitalService{err: dmerrors.New(dmerrors.ErrCodeWarNotFound, "not found")}
 	ctrl := NewCapitalController(svc)
 	router := gin.New()
 	router.GET("/builder-base-leagues/:id", ctrl.GetBuilderBaseLeague)

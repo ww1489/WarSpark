@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
@@ -160,23 +161,23 @@ func (ctl *WarController) GetCWLWar(c *gin.Context) {
 }
 
 func failWar(ctx *gin.Context, err error) {
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if errors.As(err, &warErr) {
 		switch warErr.Code {
-		case wardomain.ErrorInvalidTag:
+		case dmerrors.ErrCodeInvalidTag:
 			utils.JSON(ctx, http.StatusUnprocessableEntity, int(utils.ErrInvalidField), warErr.Code, nil)
-		case wardomain.ErrorAPINotConfigured:
+		case dmerrors.ErrCodeAPINotConfigured:
 			utils.JSON(ctx, http.StatusServiceUnavailable, int(utils.ErrInternal), warErr.Code, nil)
-		case wardomain.ErrorWarNotFound:
+		case dmerrors.ErrCodeWarNotFound:
 			utils.JSON(ctx, http.StatusNotFound, int(utils.ErrNotFound), warErr.Code, nil)
-		case wardomain.ErrorAPIAccessDenied:
+		case dmerrors.ErrCodeAPIAccessDenied:
 			utils.JSON(ctx, http.StatusForbidden, int(utils.ErrForbidden), warErr.Code, nil)
 		default:
 			utils.JSON(ctx, http.StatusBadGateway, int(utils.ErrInternal), warErr.Code, nil)
 		}
 		return
 	}
-	if errors.Is(err, wardomain.ErrSnapshotNotFound) {
+	if errors.Is(err, dmerrors.ErrSnapshotNotFound) {
 		utils.Fail(ctx, utils.NewError(utils.ErrNotFound, "war snapshot not found"))
 		return
 	}

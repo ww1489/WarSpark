@@ -7,8 +7,8 @@ import (
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/league"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 )
 
 type cocapiLeagueClient interface {
@@ -87,7 +87,7 @@ func (s *LeagueService) GetLeague(ctx context.Context, leagueID string) (league.
 	}
 	l, err := s.cocapi.GetLeague(ctx, leagueID)
 	if err != nil {
-		return league.League{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.League{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	dom := league.League{ID: l.ID, Name: string(l.Name), IconURLs: l.IconURLs}
 	if s.cache != nil {
@@ -105,7 +105,7 @@ func (s *LeagueService) GetLeagueSeasons(ctx context.Context, leagueID string) (
 	}
 	cocapiResp, err := s.cocapi.GetLeagueSeasons(ctx, leagueID, cocapi.QueryGetLeagueSeasons{})
 	if err != nil {
-		return league.LeagueSeasonListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.LeagueSeasonListResponse{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	resp := league.LeagueSeasonListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, s := range cocapiResp.Items {
@@ -126,7 +126,7 @@ func (s *LeagueService) GetLeagueSeasonRankings(ctx context.Context, leagueID, s
 	}
 	cocapiResp, err := s.cocapi.GetLeagueSeasonRankings(ctx, leagueID, season, cocapi.QueryGetLeagueSeasonRankings{})
 	if err != nil {
-		return league.LeagueSeasonRankingListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.LeagueSeasonRankingListResponse{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	resp := league.LeagueSeasonRankingListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -151,7 +151,7 @@ func (s *LeagueService) GetLeagueTiers(ctx context.Context, leagueID, season str
 	}
 	cocapiResp, err := s.cocapi.GetLeagueTiers(ctx, cocapi.QueryGetLeagueTiers{})
 	if err != nil {
-		return league.LeagueTierListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.LeagueTierListResponse{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	resp := league.LeagueTierListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, t := range cocapiResp.Items {
@@ -172,7 +172,7 @@ func (s *LeagueService) GetLeagueTier(ctx context.Context, tierID string) (leagu
 	}
 	t, err := s.cocapi.GetLeagueTier(ctx, tierID)
 	if err != nil {
-		return league.LeagueTier{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.LeagueTier{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	dom := league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs}
 	if s.cache != nil {
@@ -240,7 +240,7 @@ func (s *LeagueService) GetWarLeague(ctx context.Context, leagueID string) (leag
 	}
 	wl, err := s.cocapi.GetWarLeague(ctx, leagueID)
 	if err != nil {
-		return league.WarLeague{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+		return league.WarLeague{}, mapCocapiLeagueError(err, dmerrors.ErrCodeLeagueNotFound)
 	}
 	dom := league.WarLeague{ID: wl.ID, Name: string(wl.Name)}
 	if s.cache != nil {
@@ -255,7 +255,7 @@ func toDomainLeaguePaging(p cocapi.Paging) league.Paging {
 
 func mapCocapiLeagueError(err error, notFoundCode string) error {
 	if notFoundCode != "" && errors.Is(err, cocapi.ErrNotFound) {
-		return wardomain.NewError(notFoundCode, err.Error())
+		return dmerrors.New(notFoundCode, err.Error())
 	}
 	return mapCocapiRankingError(err, notFoundCode)
 }

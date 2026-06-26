@@ -6,7 +6,7 @@ import (
 	"time"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type fakeClanAPIClient struct {
@@ -58,7 +58,7 @@ func TestClanServiceFetchCallsAPIOnMiss(t *testing.T) {
 }
 
 func TestClanServiceFetchPropagatesNotFound(t *testing.T) {
-	api := &fakeClanAPIClient{err: wardomain.NewError(wardomain.ErrorClanNotFound, "not found")}
+	api := &fakeClanAPIClient{err: dmerrors.New(dmerrors.ErrCodeClanNotFound, "not found")}
 	cache := &fakeClanCache{clanHit: false}
 	svc := NewClanService(api, cache, 5*time.Minute)
 
@@ -66,8 +66,8 @@ func TestClanServiceFetchPropagatesNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorClanNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorClanNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodeClanNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeClanNotFound)
 	}
 }
 
@@ -77,8 +77,8 @@ func TestClanServiceFetchRejectsInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorInvalidTag {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorInvalidTag)
+	if dmerrors.Code(err) != dmerrors.ErrCodeInvalidTag {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeInvalidTag)
 	}
 }
 

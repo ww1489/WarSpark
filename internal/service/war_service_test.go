@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
@@ -80,7 +81,7 @@ func TestWarServiceFetchCurrentWarRejectsInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected invalid tag error")
 	}
-	if got := wardomain.ErrorCode(err); got != "invalid_tag" {
+	if got := dmerrors.Code(err); got != "invalid_tag" {
 		t.Fatalf("expected invalid_tag, got %q", got)
 	}
 }
@@ -273,7 +274,7 @@ func TestWarServiceGetWarLogInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected invalid tag error")
 	}
-	if got := wardomain.ErrorCode(err); got != "invalid_tag" {
+	if got := dmerrors.Code(err); got != "invalid_tag" {
 		t.Fatalf("expected invalid_tag, got %q", got)
 	}
 }
@@ -298,7 +299,7 @@ func TestWarServiceGetCWLWarInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected invalid tag error")
 	}
-	if got := wardomain.ErrorCode(err); got != "invalid_tag" {
+	if got := dmerrors.Code(err); got != "invalid_tag" {
 		t.Fatalf("expected invalid_tag, got %q", got)
 	}
 }

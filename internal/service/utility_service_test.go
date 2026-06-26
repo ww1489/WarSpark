@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/utility"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
@@ -81,12 +81,12 @@ func TestSearchClansError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorClanNotFound {
-		t.Fatalf("expected code %s, got %s", wardomain.ErrorClanNotFound, warErr.Code)
+	if warErr.Code != dmerrors.ErrCodeClanNotFound {
+		t.Fatalf("expected code %s, got %s", dmerrors.ErrCodeClanNotFound, warErr.Code)
 	}
 }
 
@@ -112,12 +112,12 @@ func TestGetLocationError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorLocationNotFound {
-		t.Fatalf("expected code %s, got %s", wardomain.ErrorLocationNotFound, warErr.Code)
+	if warErr.Code != dmerrors.ErrCodeLocationNotFound {
+		t.Fatalf("expected code %s, got %s", dmerrors.ErrCodeLocationNotFound, warErr.Code)
 	}
 }
 
@@ -143,12 +143,12 @@ func TestVerifyPlayerTokenError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorPlayerNotFound {
-		t.Fatalf("expected code %s, got %s", wardomain.ErrorPlayerNotFound, warErr.Code)
+	if warErr.Code != dmerrors.ErrCodePlayerNotFound {
+		t.Fatalf("expected code %s, got %s", dmerrors.ErrCodePlayerNotFound, warErr.Code)
 	}
 }
 
@@ -203,11 +203,11 @@ func TestGetPlayerLeagueGroupInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty tag")
 	}
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorInvalidTag {
+	if warErr.Code != dmerrors.ErrCodeInvalidTag {
 		t.Fatalf("expected invalid_tag, got %s", warErr.Code)
 	}
 }
@@ -219,33 +219,33 @@ func TestGetPlayerLeagueGroupPlayerNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorPlayerNotFound {
+	if warErr.Code != dmerrors.ErrCodePlayerNotFound {
 		t.Fatalf("expected player_not_found, got %s", warErr.Code)
 	}
 }
 
 func TestUtilityMapErrorInvalidTag(t *testing.T) {
 	err := mapCocapiUtilityError(cocapi.ErrInvalidTag, "")
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorInvalidTag {
-		t.Fatalf("expected code %s, got %s", wardomain.ErrorInvalidTag, warErr.Code)
+	if warErr.Code != dmerrors.ErrCodeInvalidTag {
+		t.Fatalf("expected code %s, got %s", dmerrors.ErrCodeInvalidTag, warErr.Code)
 	}
 }
 
 func TestUtilityMapErrorAPINotConfigured(t *testing.T) {
 	err := mapCocapiUtilityError(cocapi.ErrAPINotConfigured, "")
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if !errors.As(err, &warErr) {
-		t.Fatalf("expected wardomain.Error, got %T", err)
+		t.Fatalf("expected dmerrors.Error, got %T", err)
 	}
-	if warErr.Code != wardomain.ErrorAPINotConfigured {
-		t.Fatalf("expected code %s, got %s", wardomain.ErrorAPINotConfigured, warErr.Code)
+	if warErr.Code != dmerrors.ErrCodeAPINotConfigured {
+		t.Fatalf("expected code %s, got %s", dmerrors.ErrCodeAPINotConfigured, warErr.Code)
 	}
 }

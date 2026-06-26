@@ -8,7 +8,7 @@ import (
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
 	"github.com/ww1489/WarSpark/internal/domain/capital"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type capitalCache interface {
@@ -43,7 +43,7 @@ func NewCapitalService(cocapi cocapiCapitalClient, cache capitalCache) *CapitalS
 
 func (s *CapitalService) GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, error) {
 	if clanTag == "" || !strings.HasPrefix(clanTag, "#") {
-		return capital.CapitalRaidSeasonListResponse{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid clan tag")
+		return capital.CapitalRaidSeasonListResponse{}, dmerrors.New(dmerrors.ErrCodeInvalidTag, "invalid clan tag")
 	}
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetCapitalRaidSeasons(ctx, clanTag)
@@ -92,7 +92,7 @@ func (s *CapitalService) GetCapitalLeagues(ctx context.Context) (capital.Capital
 
 func (s *CapitalService) GetCapitalLeague(ctx context.Context, leagueID string) (capital.CapitalLeague, error) {
 	if leagueID == "" {
-		return capital.CapitalLeague{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid league id")
+		return capital.CapitalLeague{}, dmerrors.New(dmerrors.ErrCodeInvalidTag, "invalid league id")
 	}
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetCapitalLeague(ctx, leagueID)
@@ -134,7 +134,7 @@ func (s *CapitalService) GetBuilderBaseLeagues(ctx context.Context) (capital.Bui
 
 func (s *CapitalService) GetBuilderBaseLeague(ctx context.Context, leagueID string) (capital.BuilderBaseLeague, error) {
 	if leagueID == "" {
-		return capital.BuilderBaseLeague{}, wardomain.NewError(wardomain.ErrorInvalidTag, "invalid league id")
+		return capital.BuilderBaseLeague{}, dmerrors.New(dmerrors.ErrCodeInvalidTag, "invalid league id")
 	}
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetBuilderBaseLeague(ctx, leagueID)

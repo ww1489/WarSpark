@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
@@ -188,7 +189,7 @@ func TestWarControllerGetWarLog(t *testing.T) {
 func TestWarControllerGetWarLogServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	service := &fakeWarService{
-		warLogErr: wardomain.NewError(wardomain.ErrorWarNotFound, "not found"),
+		warLogErr: dmerrors.New(dmerrors.ErrCodeWarNotFound, "not found"),
 	}
 	controller := NewWarController(service)
 
@@ -231,7 +232,7 @@ func TestWarControllerGetCWLWar(t *testing.T) {
 func TestWarControllerGetCWLWarNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	service := &fakeWarService{
-		cwlWarErr: wardomain.NewError(wardomain.ErrorWarNotFound, "not found"),
+		cwlWarErr: dmerrors.New(dmerrors.ErrCodeWarNotFound, "not found"),
 	}
 	controller := NewWarController(service)
 

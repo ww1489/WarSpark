@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/ranking"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 )
 
 type fakeRankingService struct {
@@ -135,7 +135,7 @@ func TestRankingControllerGetPlayerBuilderBaseRanking(t *testing.T) {
 
 func TestRankingControllerNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeRankingService{err: wardomain.NewError(wardomain.ErrorLocationNotFound, "not found")}
+	svc := &fakeRankingService{err: dmerrors.New(dmerrors.ErrCodeLocationNotFound, "not found")}
 	ctrl := NewRankingController(svc)
 	router := gin.New()
 	router.GET("/locations/:id/rankings/clans", ctrl.GetClanRanking)

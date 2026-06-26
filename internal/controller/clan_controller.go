@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/utils"
 )
 
@@ -50,16 +50,16 @@ func (c *ClanController) GetClan(ctx *gin.Context) {
 }
 
 func failClan(ctx *gin.Context, err error) {
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if errors.As(err, &warErr) {
 		switch warErr.Code {
-		case wardomain.ErrorInvalidTag:
+		case dmerrors.ErrCodeInvalidTag:
 			utils.JSON(ctx, 422, int(utils.ErrInvalidField), warErr.Code, nil)
-		case wardomain.ErrorAPINotConfigured:
+		case dmerrors.ErrCodeAPINotConfigured:
 			utils.JSON(ctx, 503, int(utils.ErrInternal), warErr.Code, nil)
-		case wardomain.ErrorClanNotFound:
+		case dmerrors.ErrCodeClanNotFound:
 			utils.JSON(ctx, 404, int(utils.ErrNotFound), warErr.Code, nil)
-		case wardomain.ErrorAPIAccessDenied:
+		case dmerrors.ErrCodeAPIAccessDenied:
 			utils.JSON(ctx, 403, int(utils.ErrForbidden), warErr.Code, nil)
 		default:
 			utils.JSON(ctx, 502, int(utils.ErrInternal), warErr.Code, nil)

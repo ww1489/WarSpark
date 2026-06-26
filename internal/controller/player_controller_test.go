@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type fakePlayerService struct {
@@ -75,7 +75,7 @@ func TestPlayerControllerGetBattleLogReturnsItems(t *testing.T) {
 
 func TestPlayerControllerGetPlayerReturns404(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakePlayerService{err: wardomain.NewError(wardomain.ErrorPlayerNotFound, "not found")}
+	svc := &fakePlayerService{err: dmerrors.New(dmerrors.ErrCodePlayerNotFound, "not found")}
 	ctrl := NewPlayerController(svc)
 
 	router := gin.New()

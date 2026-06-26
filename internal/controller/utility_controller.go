@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/utility"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
@@ -145,12 +145,12 @@ func (ctl *UtilityController) GetPlayerLeagueGroup(c *gin.Context) {
 }
 
 func failUtility(ctx *gin.Context, err error) {
-	var warErr wardomain.Error
+	var warErr dmerrors.Error
 	if errors.As(err, &warErr) {
 		switch warErr.Code {
-		case wardomain.ErrorAPINotConfigured:
+		case dmerrors.ErrCodeAPINotConfigured:
 			utils.JSON(ctx, http.StatusServiceUnavailable, int(utils.ErrInternal), warErr.Code, nil)
-		case wardomain.ErrorAPIAccessDenied:
+		case dmerrors.ErrCodeAPIAccessDenied:
 			utils.JSON(ctx, http.StatusForbidden, int(utils.ErrForbidden), warErr.Code, nil)
 		default:
 			utils.JSON(ctx, http.StatusBadGateway, int(utils.ErrInternal), warErr.Code, nil)

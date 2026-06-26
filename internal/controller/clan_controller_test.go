@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type fakeClanService struct {
@@ -51,7 +51,7 @@ func TestClanControllerGetClanReturnsDetail(t *testing.T) {
 
 func TestClanControllerGetClanReturns404(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeClanService{err: wardomain.NewError(wardomain.ErrorClanNotFound, "not found")}
+	svc := &fakeClanService{err: dmerrors.New(dmerrors.ErrCodeClanNotFound, "not found")}
 	ctrl := NewClanController(svc)
 
 	router := gin.New()

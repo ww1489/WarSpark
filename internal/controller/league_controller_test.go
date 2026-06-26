@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/league"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 )
 
 type fakeLeagueService struct {
@@ -181,7 +181,7 @@ func TestLeagueControllerGetWarLeague(t *testing.T) {
 
 func TestLeagueControllerNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeLeagueService{err: wardomain.NewError(wardomain.ErrorLeagueNotFound, "not found")}
+	svc := &fakeLeagueService{err: dmerrors.New(dmerrors.ErrCodeLeagueNotFound, "not found")}
 	ctrl := NewLeagueController(svc)
 	router := gin.New()
 	router.GET("/leagues/:id", ctrl.GetLeague)

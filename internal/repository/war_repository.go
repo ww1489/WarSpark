@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 )
@@ -146,7 +147,7 @@ SELECT
 FROM war_snapshots
 WHERE id = ?`, id); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return wardomain.Snapshot{}, wardomain.ErrSnapshotNotFound
+			return wardomain.Snapshot{}, dmerrors.ErrSnapshotNotFound
 		}
 		return wardomain.Snapshot{}, fmt.Errorf("get war snapshot: %w", err)
 	}

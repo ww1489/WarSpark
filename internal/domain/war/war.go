@@ -1,58 +1,8 @@
 package war
 
 import (
-	"errors"
 	"time"
 )
-
-const (
-	ErrorInvalidTag         = "invalid_tag"
-	ErrorAPINotConfigured   = "api_not_configured"
-	ErrorAPIRequestFailed   = "api_request_failed"
-	ErrorAPIAccessDenied    = "api_access_denied"
-	ErrorWarNotFound        = "war_not_found"
-	ErrorAPIResponseInvalid = "api_response_invalid"
-	ErrorSnapshotNotFound   = "snapshot_not_found"
-	ErrorClanNotFound       = "clan_not_found"
-	ErrorPlayerNotFound     = "player_not_found"
-	ErrorLeagueNotFound     = "league_not_found"
-	ErrorLocationNotFound   = "location_not_found"
-)
-
-var ErrSnapshotNotFound = errors.New("war snapshot not found")
-
-type Error struct {
-	Code    string
-	Message string
-	Err     error
-}
-
-func (e Error) Error() string {
-	if e.Err != nil {
-		return e.Message + ": " + e.Err.Error()
-	}
-	return e.Message
-}
-
-func (e Error) Unwrap() error {
-	return e.Err
-}
-
-func NewError(code string, message string) Error {
-	return Error{Code: code, Message: message}
-}
-
-func WrapError(code string, message string, err error) Error {
-	return Error{Code: code, Message: message, Err: err}
-}
-
-func ErrorCode(err error) string {
-	var warErr Error
-	if errors.As(err, &warErr) {
-		return warErr.Code
-	}
-	return ""
-}
 
 type CurrentWar struct {
 	State    string  `json:"state"`

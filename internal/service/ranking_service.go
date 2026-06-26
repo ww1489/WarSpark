@@ -7,8 +7,8 @@ import (
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/ranking"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 )
 
 type rankingCache interface {
@@ -81,7 +81,7 @@ func (s *RankingService) GetClanRanking(ctx context.Context, locationID string) 
 	}
 	cocapiResp, err := s.cocapi.GetClanRanking(ctx, locationID, cocapi.QueryGetClanRanking{})
 	if err != nil {
-		return ranking.ClanRankingListResponse{}, mapCocapiRankingError(err, wardomain.ErrorLocationNotFound)
+		return ranking.ClanRankingListResponse{}, mapCocapiRankingError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	resp := ranking.ClanRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -106,7 +106,7 @@ func (s *RankingService) GetPlayerRanking(ctx context.Context, locationID string
 	}
 	cocapiResp, err := s.cocapi.GetPlayerRanking(ctx, locationID, cocapi.QueryGetPlayerRanking{})
 	if err != nil {
-		return ranking.PlayerRankingListResponse{}, mapCocapiRankingError(err, wardomain.ErrorLocationNotFound)
+		return ranking.PlayerRankingListResponse{}, mapCocapiRankingError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	resp := ranking.PlayerRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -131,7 +131,7 @@ func (s *RankingService) GetClanCapitalRanking(ctx context.Context, locationID s
 	}
 	cocapiResp, err := s.cocapi.GetClanCapitalRanking(ctx, locationID, cocapi.QueryGetClanCapitalRanking{})
 	if err != nil {
-		return ranking.ClanCapitalRankingListResponse{}, mapCocapiRankingError(err, wardomain.ErrorLocationNotFound)
+		return ranking.ClanCapitalRankingListResponse{}, mapCocapiRankingError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	resp := ranking.ClanCapitalRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -156,7 +156,7 @@ func (s *RankingService) GetClanBuilderBaseRanking(ctx context.Context, location
 	}
 	cocapiResp, err := s.cocapi.GetClanBuilderBaseRanking(ctx, locationID, cocapi.QueryGetClanBuilderBaseRanking{})
 	if err != nil {
-		return ranking.ClanBuilderBaseRankingListResponse{}, mapCocapiRankingError(err, wardomain.ErrorLocationNotFound)
+		return ranking.ClanBuilderBaseRankingListResponse{}, mapCocapiRankingError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	resp := ranking.ClanBuilderBaseRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -181,7 +181,7 @@ func (s *RankingService) GetPlayerBuilderBaseRanking(ctx context.Context, locati
 	}
 	cocapiResp, err := s.cocapi.GetPlayerBuilderBaseRanking(ctx, locationID, cocapi.QueryGetPlayerBuilderBaseRanking{})
 	if err != nil {
-		return ranking.PlayerBuilderBaseRankingListResponse{}, mapCocapiRankingError(err, wardomain.ErrorLocationNotFound)
+		return ranking.PlayerBuilderBaseRankingListResponse{}, mapCocapiRankingError(err, dmerrors.ErrCodeLocationNotFound)
 	}
 	resp := ranking.PlayerBuilderBaseRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
@@ -205,19 +205,19 @@ func mapCocapiRankingError(err error, notFoundCode string) error {
 	switch {
 	case errors.Is(err, cocapi.ErrNotFound):
 		if notFoundCode != "" {
-			return wardomain.NewError(notFoundCode, err.Error())
+			return dmerrors.New(notFoundCode, err.Error())
 		}
 		return err
 	case errors.Is(err, cocapi.ErrAPINotConfigured):
-		return wardomain.NewError(wardomain.ErrorAPINotConfigured, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPINotConfigured, err.Error())
 	case errors.Is(err, cocapi.ErrAPIAccessDenied):
-		return wardomain.NewError(wardomain.ErrorAPIAccessDenied, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIAccessDenied, err.Error())
 	case errors.Is(err, cocapi.ErrAPIRequestFailed):
-		return wardomain.NewError(wardomain.ErrorAPIRequestFailed, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 	case errors.Is(err, cocapi.ErrRateLimited):
-		return wardomain.NewError(wardomain.ErrorAPIRequestFailed, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 	case errors.Is(err, cocapi.ErrAPIResponseInvalid):
-		return wardomain.NewError(wardomain.ErrorAPIResponseInvalid, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIResponseInvalid, err.Error())
 	default:
 		return err
 	}

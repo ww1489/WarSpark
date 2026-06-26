@@ -6,7 +6,7 @@ import (
 	"time"
 
 	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 )
 
 type fakePlayerAPIClient struct {
@@ -78,7 +78,7 @@ func TestPlayerServiceFetchBattleLog(t *testing.T) {
 }
 
 func TestPlayerServiceFetchPropagatesNotFound(t *testing.T) {
-	api := &fakePlayerAPIClient{err: wardomain.NewError(wardomain.ErrorPlayerNotFound, "not found")}
+	api := &fakePlayerAPIClient{err: dmerrors.New(dmerrors.ErrCodePlayerNotFound, "not found")}
 	cache := &fakeClanCache{playerHit: false}
 	svc := NewPlayerService(api, cache, 5*time.Minute)
 
@@ -86,8 +86,8 @@ func TestPlayerServiceFetchPropagatesNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorPlayerNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorPlayerNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodePlayerNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodePlayerNotFound)
 	}
 }
 
@@ -97,7 +97,7 @@ func TestPlayerServiceFetchRejectsInvalidTag(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorInvalidTag {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorInvalidTag)
+	if dmerrors.Code(err) != dmerrors.ErrCodeInvalidTag {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeInvalidTag)
 	}
 }

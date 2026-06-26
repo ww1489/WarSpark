@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
@@ -134,8 +134,8 @@ func TestCurrentWarRequiresToken(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty token")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorAPINotConfigured {
-		t.Fatalf("error code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorAPINotConfigured)
+	if dmerrors.Code(err) != dmerrors.ErrCodeAPINotConfigured {
+		t.Fatalf("error code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeAPINotConfigured)
 	}
 }
 
@@ -145,19 +145,19 @@ func TestErrorMapping(t *testing.T) {
 		cocapi  error
 		wantCod string
 	}{
-		{"not configured", cocapi.ErrAPINotConfigured, wardomain.ErrorAPINotConfigured},
-		{"access denied", cocapi.ErrAPIAccessDenied, wardomain.ErrorAPIAccessDenied},
-		{"not found", cocapi.ErrNotFound, wardomain.ErrorWarNotFound},
-		{"invalid tag", cocapi.ErrInvalidTag, wardomain.ErrorInvalidTag},
-		{"response invalid", cocapi.ErrAPIResponseInvalid, wardomain.ErrorAPIResponseInvalid},
-		{"request failed", cocapi.ErrAPIRequestFailed, wardomain.ErrorAPIRequestFailed},
-		{"rate limited", cocapi.ErrRateLimited, wardomain.ErrorAPIRequestFailed},
+		{"not configured", cocapi.ErrAPINotConfigured, dmerrors.ErrCodeAPINotConfigured},
+		{"access denied", cocapi.ErrAPIAccessDenied, dmerrors.ErrCodeAPIAccessDenied},
+		{"not found", cocapi.ErrNotFound, dmerrors.ErrCodeWarNotFound},
+		{"invalid tag", cocapi.ErrInvalidTag, dmerrors.ErrCodeInvalidTag},
+		{"response invalid", cocapi.ErrAPIResponseInvalid, dmerrors.ErrCodeAPIResponseInvalid},
+		{"request failed", cocapi.ErrAPIRequestFailed, dmerrors.ErrCodeAPIRequestFailed},
+		{"rate limited", cocapi.ErrRateLimited, dmerrors.ErrCodeAPIRequestFailed},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			mapped := mapError(tc.cocapi)
-			if wardomain.ErrorCode(mapped) != tc.wantCod {
-				t.Fatalf("code = %q, want %q", wardomain.ErrorCode(mapped), tc.wantCod)
+			if dmerrors.Code(mapped) != tc.wantCod {
+				t.Fatalf("code = %q, want %q", dmerrors.Code(mapped), tc.wantCod)
 			}
 			if !errors.Is(mapped, tc.cocapi) {
 				t.Fatalf("mapped error should wrap original: %v", mapped)
@@ -178,8 +178,8 @@ func TestCurrentWarMapsNotFoundError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorWarNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorWarNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodeWarNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeWarNotFound)
 	}
 }
 
@@ -195,8 +195,8 @@ func TestCurrentWarMapsAccessDenied(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorAPIAccessDenied {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorAPIAccessDenied)
+	if dmerrors.Code(err) != dmerrors.ErrCodeAPIAccessDenied {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeAPIAccessDenied)
 	}
 }
 
@@ -299,8 +299,8 @@ func TestClanNotFoundMapsToClanNotFoundCode(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorClanNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorClanNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodeClanNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeClanNotFound)
 	}
 }
 
@@ -316,7 +316,7 @@ func TestPlayerNotFoundMapsToPlayerNotFoundCode(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorPlayerNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorPlayerNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodePlayerNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodePlayerNotFound)
 	}
 }

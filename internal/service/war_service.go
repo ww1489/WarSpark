@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
@@ -177,33 +178,33 @@ func (s *WarService) GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanW
 
 func mapCocapiErrorToWarError(err error) error {
 	if errors.Is(err, cocapi.ErrNotFound) {
-		return wardomain.NewError(wardomain.ErrorWarNotFound, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeWarNotFound, err.Error())
 	}
 	if errors.Is(err, cocapi.ErrInvalidTag) {
-		return wardomain.NewError(wardomain.ErrorInvalidTag, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeInvalidTag, err.Error())
 	}
 	if errors.Is(err, cocapi.ErrAPINotConfigured) {
-		return wardomain.NewError(wardomain.ErrorAPINotConfigured, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPINotConfigured, err.Error())
 	}
 	if errors.Is(err, cocapi.ErrAPIAccessDenied) {
-		return wardomain.NewError(wardomain.ErrorAPIAccessDenied, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIAccessDenied, err.Error())
 	}
 	if errors.Is(err, cocapi.ErrAPIResponseInvalid) {
-		return wardomain.NewError(wardomain.ErrorAPIResponseInvalid, err.Error())
+		return dmerrors.New(dmerrors.ErrCodeAPIResponseInvalid, err.Error())
 	}
-	return wardomain.NewError(wardomain.ErrorAPIRequestFailed, err.Error())
+	return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 }
 
 func NormalizeClanTag(value string) (string, error) {
 	tag := strings.ToUpper(strings.TrimSpace(value))
 	if tag == "" {
-		return "", wardomain.NewError(wardomain.ErrorInvalidTag, "clan tag is required")
+		return "", dmerrors.New(dmerrors.ErrCodeInvalidTag, "clan tag is required")
 	}
 	if !strings.HasPrefix(tag, "#") {
 		tag = "#" + tag
 	}
 	if !clanTagPattern.MatchString(tag) {
-		return "", wardomain.NewError(wardomain.ErrorInvalidTag, "invalid clan tag")
+		return "", dmerrors.New(dmerrors.ErrCodeInvalidTag, "invalid clan tag")
 	}
 	return tag, nil
 }

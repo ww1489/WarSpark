@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/utility"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	"github.com/ww1489/WarSpark/internal/utils"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
@@ -144,7 +144,7 @@ func TestUtilityGetPlayerLeagueGroup(t *testing.T) {
 
 func TestUtilityGetPlayerLeagueGroupError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeUtilityService{err: wardomain.NewError(wardomain.ErrorPlayerNotFound, "not found")}
+	svc := &fakeUtilityService{err: dmerrors.New(dmerrors.ErrCodePlayerNotFound, "not found")}
 	ctrl := NewUtilityController(svc)
 	router := gin.New()
 	router.GET("/players/:tag/league-group", ctrl.GetPlayerLeagueGroup)
@@ -158,7 +158,7 @@ func TestUtilityGetPlayerLeagueGroupError(t *testing.T) {
 
 func TestUtilityGetLocationError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeUtilityService{location: cocapi.Location{}, err: wardomain.NewError(wardomain.ErrorLocationNotFound, "location not found")}
+	svc := &fakeUtilityService{location: cocapi.Location{}, err: dmerrors.New(dmerrors.ErrCodeLocationNotFound, "location not found")}
 	ctrl := NewUtilityController(svc)
 	router := gin.New()
 	router.GET("/locations/:id", ctrl.GetLocation)

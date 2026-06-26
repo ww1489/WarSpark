@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/league"
-	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
 
@@ -153,8 +153,8 @@ func TestLeagueServiceNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if wardomain.ErrorCode(err) != wardomain.ErrorLeagueNotFound {
-		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorLeagueNotFound)
+	if dmerrors.Code(err) != dmerrors.ErrCodeLeagueNotFound {
+		t.Fatalf("code = %q, want %q", dmerrors.Code(err), dmerrors.ErrCodeLeagueNotFound)
 	}
 }
 
