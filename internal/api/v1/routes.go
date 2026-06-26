@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -41,6 +42,11 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		CWLGroupCacheTTL:   runtimeConfig.Config.CoC.CWLGroupCacheTTL,
 	})
 	warController := controller.NewWarController(warService)
+	clanCache := infraredis.NewClanCache(runtimeConfig.Redis)
+	clanService := service.NewClanService(warAPIClient, clanCache, 5*time.Minute)
+	clanController := controller.NewClanController(clanService)
+	playerService := service.NewPlayerService(warAPIClient, clanCache, 5*time.Minute)
+	playerController := controller.NewPlayerController(playerService)
 
 	router.GET("/health", healthController.Check)
 	router.Static("/uploads", "data/uploads")
@@ -62,6 +68,9 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		api.GET("/war/current", warController.GetCurrent)
 		api.GET("/war/cwl", warController.GetCWL)
 		api.GET("/war/snapshots/:war_snapshot_id/members", warController.ListMembers)
+		api.GET("/clans/:tag", clanController.GetClan)
+		api.GET("/players/:tag", playerController.GetPlayer)
+		api.GET("/players/:tag/battle-log", playerController.GetBattleLog)
 
 		admin := api.Group("/admin", authmw.Required(runtimeConfig.TokenManager))
 		{
