@@ -35,6 +35,11 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		APIToken: runtimeConfig.Config.CoC.APIToken,
 		Timeout:  runtimeConfig.Config.CoC.Timeout,
 	})
+	cocapiClient := cocapi.New(cocapi.Config{
+		BaseURL:  runtimeConfig.Config.CoC.BaseURL,
+		APIToken: runtimeConfig.Config.CoC.APIToken,
+		Timeout:  runtimeConfig.Config.CoC.Timeout,
+	})
 	warCache := infraredis.NewWarCache(runtimeConfig.Redis)
 	warService := service.NewWarService(warAPIClient, warRepository, service.WarServiceOptions{
 		Cache:              warCache,
@@ -71,6 +76,31 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		api.GET("/clans/:tag", clanController.GetClan)
 		api.GET("/players/:tag", playerController.GetPlayer)
 		api.GET("/players/:tag/battle-log", playerController.GetBattleLog)
+
+		rankingService := service.NewRankingService(cocapiClient, infraredis.NewRankingCache(runtimeConfig.Redis), 10*time.Minute)
+		rankingController := controller.NewRankingController(rankingService)
+		leagueService := service.NewLeagueService(cocapiClient, infraredis.NewLeagueCache(runtimeConfig.Redis), 30*time.Minute)
+		leagueController := controller.NewLeagueController(leagueService)
+		labelService := service.NewLabelService(cocapiClient, infraredis.NewLabelCache(runtimeConfig.Redis), time.Hour)
+		labelController := controller.NewLabelController(labelService)
+
+		api.GET("/clans/labels", labelController.GetClanLabels)
+		api.GET("/players/labels", labelController.GetPlayerLabels)
+		api.GET("/locations", rankingController.GetLocations)
+		api.GET("/locations/:id/rankings/clans", rankingController.GetClanRanking)
+		api.GET("/locations/:id/rankings/players", rankingController.GetPlayerRanking)
+		api.GET("/locations/:id/rankings/clans-capital", rankingController.GetClanCapitalRanking)
+		api.GET("/locations/:id/rankings/clans-builder-base", rankingController.GetClanBuilderBaseRanking)
+		api.GET("/locations/:id/rankings/players-builder-base", rankingController.GetPlayerBuilderBaseRanking)
+		api.GET("/leagues", leagueController.GetLeagues)
+		api.GET("/leagues/:id", leagueController.GetLeague)
+		api.GET("/leagues/:id/seasons", leagueController.GetLeagueSeasons)
+		api.GET("/leagues/:id/seasons/:season/rankings", leagueController.GetLeagueSeasonRankings)
+		api.GET("/leagues/:id/seasons/:season/tiers", leagueController.GetLeagueTiers)
+		api.GET("/leagues/:id/seasons/:season/tiers/:tier", leagueController.GetLeagueTier)
+		api.GET("/leagues/:id/seasons/:season/tiers/:tier/history", leagueController.GetLeagueHistory)
+		api.GET("/war-leagues", leagueController.GetWarLeagues)
+		api.GET("/war-leagues/:id", leagueController.GetWarLeague)
 
 		admin := api.Group("/admin", authmw.Required(runtimeConfig.TokenManager))
 		{
