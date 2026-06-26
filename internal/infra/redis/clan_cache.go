@@ -14,10 +14,11 @@ import (
 
 type ClanCache struct {
 	client *goredis.Client
+	ttl    time.Duration
 }
 
-func NewClanCache(client *goredis.Client) *ClanCache {
-	return &ClanCache{client: client}
+func NewClanCache(client *goredis.Client, ttl time.Duration) *ClanCache {
+	return &ClanCache{client: client, ttl: ttl}
 }
 
 func (c *ClanCache) GetClan(ctx context.Context, clanTag string) (clandomain.ClanDetail, bool, error) {
@@ -38,7 +39,7 @@ func (c *ClanCache) GetClan(ctx context.Context, clanTag string) (clandomain.Cla
 	return detail, true, nil
 }
 
-func (c *ClanCache) SetClan(ctx context.Context, clanTag string, detail clandomain.ClanDetail, ttl time.Duration) error {
+func (c *ClanCache) SetClan(ctx context.Context, clanTag string, detail clandomain.ClanDetail) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -46,7 +47,7 @@ func (c *ClanCache) SetClan(ctx context.Context, clanTag string, detail clandoma
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, clanDetailKey(clanTag), data, ttl).Err()
+	return c.client.Set(ctx, clanDetailKey(clanTag), data, c.ttl).Err()
 }
 
 func (c *ClanCache) GetPlayer(ctx context.Context, playerTag string) (clandomain.PlayerOverview, bool, error) {
@@ -67,7 +68,7 @@ func (c *ClanCache) GetPlayer(ctx context.Context, playerTag string) (clandomain
 	return player, true, nil
 }
 
-func (c *ClanCache) SetPlayer(ctx context.Context, playerTag string, player clandomain.PlayerOverview, ttl time.Duration) error {
+func (c *ClanCache) SetPlayer(ctx context.Context, playerTag string, player clandomain.PlayerOverview) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -75,7 +76,7 @@ func (c *ClanCache) SetPlayer(ctx context.Context, playerTag string, player clan
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, playerOverviewKey(playerTag), data, ttl).Err()
+	return c.client.Set(ctx, playerOverviewKey(playerTag), data, c.ttl).Err()
 }
 
 func (c *ClanCache) GetBattleLog(ctx context.Context, playerTag string) (clandomain.BattleLogSummary, bool, error) {
@@ -96,7 +97,7 @@ func (c *ClanCache) GetBattleLog(ctx context.Context, playerTag string) (clandom
 	return log, true, nil
 }
 
-func (c *ClanCache) SetBattleLog(ctx context.Context, playerTag string, log clandomain.BattleLogSummary, ttl time.Duration) error {
+func (c *ClanCache) SetBattleLog(ctx context.Context, playerTag string, log clandomain.BattleLogSummary) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -104,7 +105,7 @@ func (c *ClanCache) SetBattleLog(ctx context.Context, playerTag string, log clan
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, battleLogKey(playerTag), data, ttl).Err()
+	return c.client.Set(ctx, battleLogKey(playerTag), data, c.ttl).Err()
 }
 
 func clanDetailKey(clanTag string) string {
