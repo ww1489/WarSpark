@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
 	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/league"
@@ -34,61 +33,61 @@ type fakeLeagueCache struct {
 func (f *fakeLeagueCache) GetLeagues(ctx context.Context) (league.LeagueListResponse, bool, error) {
 	return f.leagues, f.leaguesHit, nil
 }
-func (f *fakeLeagueCache) SetLeagues(ctx context.Context, resp league.LeagueListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagues(ctx context.Context, resp league.LeagueListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeague(ctx context.Context, id string) (league.League, bool, error) {
 	return f.l, f.leagueHit, nil
 }
-func (f *fakeLeagueCache) SetLeague(ctx context.Context, id string, l league.League, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeague(ctx context.Context, id string, l league.League) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, bool, error) {
 	return f.seasons, f.seasonsHit, nil
 }
-func (f *fakeLeagueCache) SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, bool, error) {
 	return f.rankings, f.rankingsHit, nil
 }
-func (f *fakeLeagueCache) SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, bool, error) {
 	return f.tiers, f.tiersHit, nil
 }
-func (f *fakeLeagueCache) SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, bool, error) {
 	return f.tier, f.tierHit, nil
 }
-func (f *fakeLeagueCache) SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, bool, error) {
 	return f.history, f.historyHit, nil
 }
-func (f *fakeLeagueCache) SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, bool, error) {
 	return f.warLeagues, f.warLeaguesHit, nil
 }
-func (f *fakeLeagueCache) SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse) error {
 	return nil
 }
 func (f *fakeLeagueCache) GetWarLeague(ctx context.Context, id string) (league.WarLeague, bool, error) {
 	return f.warLeague, f.warLeagueHit, nil
 }
-func (f *fakeLeagueCache) SetWarLeague(ctx context.Context, id string, l league.WarLeague, ttl time.Duration) error {
+func (f *fakeLeagueCache) SetWarLeague(ctx context.Context, id string, l league.WarLeague) error {
 	return nil
 }
 
 func TestLeagueServiceGetLeaguesCached(t *testing.T) {
 	cached := league.LeagueListResponse{Items: []league.League{{ID: 1, Name: "Champion"}}}
-	svc := NewLeagueService(&fakeCocapiClient{}, &fakeLeagueCache{leagues: cached, leaguesHit: true}, 30*time.Minute)
+	svc := NewLeagueService(&fakeCocapiClient{}, &fakeLeagueCache{leagues: cached, leaguesHit: true})
 	resp, err := svc.GetLeagues(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -100,7 +99,7 @@ func TestLeagueServiceGetLeaguesCached(t *testing.T) {
 
 func TestLeagueServiceGetLeaguesFromAPI(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagues: cocapi.LeagueListResponse{Items: []cocapi.League{{ID: 1, Name: "Champion"}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetLeagues(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -112,7 +111,7 @@ func TestLeagueServiceGetLeaguesFromAPI(t *testing.T) {
 
 func TestLeagueServiceGetLeague(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{league: cocapi.League{ID: 1, Name: "Champion"}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	l, err := svc.GetLeague(context.Background(), "1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -124,7 +123,7 @@ func TestLeagueServiceGetLeague(t *testing.T) {
 
 func TestLeagueServiceGetWarLeagues(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{warLeagues: cocapi.WarLeagueListResponse{Items: []cocapi.WarLeague{{ID: 1, Name: "Master"}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetWarLeagues(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -136,7 +135,7 @@ func TestLeagueServiceGetWarLeagues(t *testing.T) {
 
 func TestLeagueServiceGetLeagueHistory(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagueHistory: cocapi.LeagueSeasonResultListResponse{Items: []cocapi.LeagueSeasonResult{{Placement: 1}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetLeagueHistory(context.Background(), "#P1ABC")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -148,7 +147,7 @@ func TestLeagueServiceGetLeagueHistory(t *testing.T) {
 
 func TestLeagueServiceNotFound(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{err: cocapi.ErrNotFound}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	_, err := svc.GetLeague(context.Background(), "999")
 	if err == nil {
 		t.Fatal("expected error")
@@ -160,7 +159,7 @@ func TestLeagueServiceNotFound(t *testing.T) {
 
 func TestLeagueServiceGetLeagueSeasons(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagueSeasons: cocapi.LeagueSeasonListResponse{Items: []cocapi.LeagueSeason{{ID: "2026-01"}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetLeagueSeasons(context.Background(), "1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -172,7 +171,7 @@ func TestLeagueServiceGetLeagueSeasons(t *testing.T) {
 
 func TestLeagueServiceGetLeagueSeasonRankings(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagueRankings: cocapi.PlayerRankingListResponse{Items: []cocapi.PlayerRanking{{Name: "TopPlayer", Rank: 1}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetLeagueSeasonRankings(context.Background(), "1", "2026-01")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -184,7 +183,7 @@ func TestLeagueServiceGetLeagueSeasonRankings(t *testing.T) {
 
 func TestLeagueServiceGetLeagueTiers(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagueTiers: cocapi.LeagueTierListResponse{Items: []cocapi.LeagueTier{{ID: 1, Name: "Champion I"}}}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	resp, err := svc.GetLeagueTiers(context.Background(), "1", "2026-01")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -196,7 +195,7 @@ func TestLeagueServiceGetLeagueTiers(t *testing.T) {
 
 func TestLeagueServiceGetLeagueTier(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{leagueTier: cocapi.LeagueTier{ID: 1, Name: "Champion I"}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	lt, err := svc.GetLeagueTier(context.Background(), "1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -208,7 +207,7 @@ func TestLeagueServiceGetLeagueTier(t *testing.T) {
 
 func TestLeagueServiceGetWarLeague(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{warLeague: cocapi.WarLeague{ID: 1, Name: "Master"}}
-	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{}, 30*time.Minute)
+	svc := NewLeagueService(fakeAPI, &fakeLeagueCache{})
 	wl, err := svc.GetWarLeague(context.Background(), "1")
 	if err != nil {
 		t.Fatalf("error: %v", err)

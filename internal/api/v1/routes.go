@@ -78,11 +78,11 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		api.GET("/players/:tag", playerController.GetPlayer)
 		api.GET("/players/:tag/battle-log", playerController.GetBattleLog)
 
-		rankingService := service.NewRankingService(cocapiClient, infraredis.NewRankingCache(runtimeConfig.Redis), 10*time.Minute)
+		rankingService := service.NewRankingService(cocapiClient, infraredis.NewRankingCache(runtimeConfig.Redis, 10*time.Minute))
 		rankingController := controller.NewRankingController(rankingService)
-		leagueService := service.NewLeagueService(cocapiClient, infraredis.NewLeagueCache(runtimeConfig.Redis), 30*time.Minute)
+		leagueService := service.NewLeagueService(cocapiClient, infraredis.NewLeagueCache(runtimeConfig.Redis, 30*time.Minute))
 		leagueController := controller.NewLeagueController(leagueService)
-		labelService := service.NewLabelService(cocapiClient, infraredis.NewLabelCache(runtimeConfig.Redis), time.Hour)
+		labelService := service.NewLabelService(cocapiClient, infraredis.NewLabelCache(runtimeConfig.Redis, time.Hour))
 		labelController := controller.NewLabelController(labelService)
 
 		api.GET("/clans/labels", labelController.GetClanLabels)

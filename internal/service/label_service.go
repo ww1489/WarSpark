@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
@@ -11,9 +10,9 @@ import (
 
 type labelCache interface {
 	GetClanLabels(ctx context.Context) (label.LabelListResponse, bool, error)
-	SetClanLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error
+	SetClanLabels(ctx context.Context, resp label.LabelListResponse) error
 	GetPlayerLabels(ctx context.Context) (label.LabelListResponse, bool, error)
-	SetPlayerLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error
+	SetPlayerLabels(ctx context.Context, resp label.LabelListResponse) error
 }
 
 type cocapiLabelClient interface {
@@ -22,16 +21,12 @@ type cocapiLabelClient interface {
 }
 
 type LabelService struct {
-	cocapi   cocapiLabelClient
-	cache    labelCache
-	cacheTTL time.Duration
+	cocapi cocapiLabelClient
+	cache  labelCache
 }
 
-func NewLabelService(cocapi cocapiLabelClient, cache labelCache, ttl time.Duration) *LabelService {
-	if ttl <= 0 {
-		ttl = time.Hour
-	}
-	return &LabelService{cocapi: cocapi, cache: cache, cacheTTL: ttl}
+func NewLabelService(cocapi cocapiLabelClient, cache labelCache) *LabelService {
+	return &LabelService{cocapi: cocapi, cache: cache}
 }
 
 func (s *LabelService) GetClanLabels(ctx context.Context) (label.LabelListResponse, error) {
@@ -50,7 +45,7 @@ func (s *LabelService) GetClanLabels(ctx context.Context) (label.LabelListRespon
 		resp.Items = append(resp.Items, label.Label{ID: lbl.ID, Name: string(lbl.Name), IconURLs: lbl.IconURLs})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetClanLabels(ctx, resp, s.cacheTTL)
+		_ = s.cache.SetClanLabels(ctx, resp)
 	}
 	return resp, nil
 }
@@ -71,7 +66,7 @@ func (s *LabelService) GetPlayerLabels(ctx context.Context) (label.LabelListResp
 		resp.Items = append(resp.Items, label.Label{ID: lbl.ID, Name: string(lbl.Name), IconURLs: lbl.IconURLs})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetPlayerLabels(ctx, resp, s.cacheTTL)
+		_ = s.cache.SetPlayerLabels(ctx, resp)
 	}
 	return resp, nil
 }

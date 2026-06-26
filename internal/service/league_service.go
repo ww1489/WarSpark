@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
@@ -25,36 +24,32 @@ type cocapiLeagueClient interface {
 
 type leagueCache interface {
 	GetLeagues(ctx context.Context) (league.LeagueListResponse, bool, error)
-	SetLeagues(ctx context.Context, resp league.LeagueListResponse, ttl time.Duration) error
+	SetLeagues(ctx context.Context, resp league.LeagueListResponse) error
 	GetLeague(ctx context.Context, id string) (league.League, bool, error)
-	SetLeague(ctx context.Context, id string, l league.League, ttl time.Duration) error
+	SetLeague(ctx context.Context, id string, l league.League) error
 	GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, bool, error)
-	SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse, ttl time.Duration) error
+	SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse) error
 	GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, bool, error)
-	SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse, ttl time.Duration) error
+	SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse) error
 	GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, bool, error)
-	SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse, ttl time.Duration) error
+	SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse) error
 	GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, bool, error)
-	SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier, ttl time.Duration) error
+	SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier) error
 	GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, bool, error)
-	SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse, ttl time.Duration) error
+	SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse) error
 	GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, bool, error)
-	SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse, ttl time.Duration) error
+	SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse) error
 	GetWarLeague(ctx context.Context, id string) (league.WarLeague, bool, error)
-	SetWarLeague(ctx context.Context, id string, l league.WarLeague, ttl time.Duration) error
+	SetWarLeague(ctx context.Context, id string, l league.WarLeague) error
 }
 
 type LeagueService struct {
-	cocapi   cocapiLeagueClient
-	cache    leagueCache
-	cacheTTL time.Duration
+	cocapi cocapiLeagueClient
+	cache  leagueCache
 }
 
-func NewLeagueService(cocapi cocapiLeagueClient, cache leagueCache, ttl time.Duration) *LeagueService {
-	if ttl <= 0 {
-		ttl = 30 * time.Minute
-	}
-	return &LeagueService{cocapi: cocapi, cache: cache, cacheTTL: ttl}
+func NewLeagueService(cocapi cocapiLeagueClient, cache leagueCache) *LeagueService {
+	return &LeagueService{cocapi: cocapi, cache: cache}
 }
 
 func (s *LeagueService) GetLeagues(ctx context.Context) (league.LeagueListResponse, error) {
@@ -73,7 +68,7 @@ func (s *LeagueService) GetLeagues(ctx context.Context) (league.LeagueListRespon
 		resp.Items = append(resp.Items, league.League{ID: l.ID, Name: string(l.Name), IconURLs: l.IconURLs})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLeagues(ctx, resp, s.cacheTTL)
+		_ = s.cache.SetLeagues(ctx, resp)
 	}
 	return resp, nil
 }
@@ -91,7 +86,7 @@ func (s *LeagueService) GetLeague(ctx context.Context, leagueID string) (league.
 	}
 	dom := league.League{ID: l.ID, Name: string(l.Name), IconURLs: l.IconURLs}
 	if s.cache != nil {
-		_ = s.cache.SetLeague(ctx, leagueID, dom, s.cacheTTL)
+		_ = s.cache.SetLeague(ctx, leagueID, dom)
 	}
 	return dom, nil
 }
@@ -112,7 +107,7 @@ func (s *LeagueService) GetLeagueSeasons(ctx context.Context, leagueID string) (
 		resp.Items = append(resp.Items, league.LeagueSeason{ID: s.ID})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLeagueSeasons(ctx, leagueID, resp, s.cacheTTL)
+		_ = s.cache.SetLeagueSeasons(ctx, leagueID, resp)
 	}
 	return resp, nil
 }
@@ -137,7 +132,7 @@ func (s *LeagueService) GetLeagueSeasonRankings(ctx context.Context, leagueID, s
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLeagueSeasonRankings(ctx, leagueID, season, resp, s.cacheTTL)
+		_ = s.cache.SetLeagueSeasonRankings(ctx, leagueID, season, resp)
 	}
 	return resp, nil
 }
@@ -158,7 +153,7 @@ func (s *LeagueService) GetLeagueTiers(ctx context.Context, leagueID, season str
 		resp.Items = append(resp.Items, league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLeagueTiers(ctx, leagueID, season, resp, s.cacheTTL)
+		_ = s.cache.SetLeagueTiers(ctx, leagueID, season, resp)
 	}
 	return resp, nil
 }
@@ -176,7 +171,7 @@ func (s *LeagueService) GetLeagueTier(ctx context.Context, tierID string) (leagu
 	}
 	dom := league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs}
 	if s.cache != nil {
-		_ = s.cache.SetLeagueTier(ctx, tierID, dom, s.cacheTTL)
+		_ = s.cache.SetLeagueTier(ctx, tierID, dom)
 	}
 	return dom, nil
 }
@@ -205,7 +200,7 @@ func (s *LeagueService) GetLeagueHistory(ctx context.Context, playerTag string) 
 		})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLeagueHistory(ctx, normalizedTag, resp, s.cacheTTL)
+		_ = s.cache.SetLeagueHistory(ctx, normalizedTag, resp)
 	}
 	return resp, nil
 }
@@ -226,7 +221,7 @@ func (s *LeagueService) GetWarLeagues(ctx context.Context) (league.WarLeagueList
 		resp.Items = append(resp.Items, league.WarLeague{ID: wl.ID, Name: string(wl.Name)})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetWarLeagues(ctx, resp, s.cacheTTL)
+		_ = s.cache.SetWarLeagues(ctx, resp)
 	}
 	return resp, nil
 }
@@ -244,7 +239,7 @@ func (s *LeagueService) GetWarLeague(ctx context.Context, leagueID string) (leag
 	}
 	dom := league.WarLeague{ID: wl.ID, Name: string(wl.Name)}
 	if s.cache != nil {
-		_ = s.cache.SetWarLeague(ctx, leagueID, dom, s.cacheTTL)
+		_ = s.cache.SetWarLeague(ctx, leagueID, dom)
 	}
 	return dom, nil
 }

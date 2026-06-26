@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
 	dmerrors "github.com/ww1489/WarSpark/internal/domain/errors"
 	"github.com/ww1489/WarSpark/internal/domain/ranking"
@@ -22,43 +21,43 @@ type fakeRankingCache struct {
 func (f *fakeRankingCache) GetLocations(ctx context.Context) (ranking.LocationListResponse, bool, error) {
 	return f.locations, f.locationsHit, nil
 }
-func (f *fakeRankingCache) SetLocations(ctx context.Context, resp ranking.LocationListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetLocations(ctx context.Context, resp ranking.LocationListResponse) error {
 	return nil
 }
 func (f *fakeRankingCache) GetClanRanking(ctx context.Context, locationID string) (ranking.ClanRankingListResponse, bool, error) {
 	return f.clanRanking, f.clanRankingHit, nil
 }
-func (f *fakeRankingCache) SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse) error {
 	return nil
 }
 func (f *fakeRankingCache) GetPlayerRanking(ctx context.Context, locationID string) (ranking.PlayerRankingListResponse, bool, error) {
 	return f.playerRanking, f.playerRankingHit, nil
 }
-func (f *fakeRankingCache) SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse) error {
 	return nil
 }
 func (f *fakeRankingCache) GetClanCapitalRanking(ctx context.Context, locationID string) (ranking.ClanCapitalRankingListResponse, bool, error) {
 	return ranking.ClanCapitalRankingListResponse{}, false, nil
 }
-func (f *fakeRankingCache) SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse) error {
 	return nil
 }
 func (f *fakeRankingCache) GetClanBuilderBaseRanking(ctx context.Context, locationID string) (ranking.ClanBuilderBaseRankingListResponse, bool, error) {
 	return ranking.ClanBuilderBaseRankingListResponse{}, false, nil
 }
-func (f *fakeRankingCache) SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse) error {
 	return nil
 }
 func (f *fakeRankingCache) GetPlayerBuilderBaseRanking(ctx context.Context, locationID string) (ranking.PlayerBuilderBaseRankingListResponse, bool, error) {
 	return ranking.PlayerBuilderBaseRankingListResponse{}, false, nil
 }
-func (f *fakeRankingCache) SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse, ttl time.Duration) error {
+func (f *fakeRankingCache) SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse) error {
 	return nil
 }
 
 func TestRankingServiceGetLocationsCached(t *testing.T) {
 	cached := ranking.LocationListResponse{Items: []ranking.Location{{ID: 1, Name: "Global"}}}
-	svc := NewRankingService(&fakeCocapiClient{}, &fakeRankingCache{locations: cached, locationsHit: true}, 10*time.Minute)
+	svc := NewRankingService(&fakeCocapiClient{}, &fakeRankingCache{locations: cached, locationsHit: true})
 	resp, err := svc.GetLocations(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -72,7 +71,7 @@ func TestRankingServiceGetLocationsFromAPI(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{
 		locations: cocapi.LocationListResponse{Items: []cocapi.Location{{ID: 1, Name: "Global"}}},
 	}
-	svc := NewRankingService(fakeAPI, &fakeRankingCache{}, 10*time.Minute)
+	svc := NewRankingService(fakeAPI, &fakeRankingCache{})
 	resp, err := svc.GetLocations(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -84,7 +83,7 @@ func TestRankingServiceGetLocationsFromAPI(t *testing.T) {
 
 func TestRankingServiceGetClanRanking(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{clanRanking: cocapi.ClanRankingListResponse{Items: []cocapi.ClanRanking{{Name: "TopClan", Rank: 1}}}}
-	svc := NewRankingService(fakeAPI, &fakeRankingCache{}, 10*time.Minute)
+	svc := NewRankingService(fakeAPI, &fakeRankingCache{})
 	resp, err := svc.GetClanRanking(context.Background(), "global")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -96,7 +95,7 @@ func TestRankingServiceGetClanRanking(t *testing.T) {
 
 func TestRankingServiceGetPlayerRanking(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{playerRanking: cocapi.PlayerRankingListResponse{Items: []cocapi.PlayerRanking{{Name: "TopPlayer", Rank: 1}}}}
-	svc := NewRankingService(fakeAPI, &fakeRankingCache{}, 10*time.Minute)
+	svc := NewRankingService(fakeAPI, &fakeRankingCache{})
 	resp, err := svc.GetPlayerRanking(context.Background(), "global")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -108,7 +107,7 @@ func TestRankingServiceGetPlayerRanking(t *testing.T) {
 
 func TestRankingServiceNotFound(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{err: cocapi.ErrNotFound}
-	svc := NewRankingService(fakeAPI, &fakeRankingCache{}, 10*time.Minute)
+	svc := NewRankingService(fakeAPI, &fakeRankingCache{})
 	_, err := svc.GetClanRanking(context.Background(), "999")
 	if err == nil {
 		t.Fatal("expected error")

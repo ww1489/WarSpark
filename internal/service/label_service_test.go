@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/ww1489/WarSpark/internal/domain/label"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
@@ -19,19 +18,19 @@ type fakeLabelCache struct {
 func (f *fakeLabelCache) GetClanLabels(ctx context.Context) (label.LabelListResponse, bool, error) {
 	return f.clanLabels, f.clanHit, nil
 }
-func (f *fakeLabelCache) SetClanLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error {
+func (f *fakeLabelCache) SetClanLabels(ctx context.Context, resp label.LabelListResponse) error {
 	return nil
 }
 func (f *fakeLabelCache) GetPlayerLabels(ctx context.Context) (label.LabelListResponse, bool, error) {
 	return f.playerLabels, f.playerHit, nil
 }
-func (f *fakeLabelCache) SetPlayerLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error {
+func (f *fakeLabelCache) SetPlayerLabels(ctx context.Context, resp label.LabelListResponse) error {
 	return nil
 }
 
 func TestLabelServiceGetClanLabelsCached(t *testing.T) {
 	cached := label.LabelListResponse{Items: []label.Label{{ID: 1, Name: "Clan War"}}}
-	svc := NewLabelService(&fakeCocapiClient{}, &fakeLabelCache{clanLabels: cached, clanHit: true}, time.Hour)
+	svc := NewLabelService(&fakeCocapiClient{}, &fakeLabelCache{clanLabels: cached, clanHit: true})
 	resp, err := svc.GetClanLabels(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -43,7 +42,7 @@ func TestLabelServiceGetClanLabelsCached(t *testing.T) {
 
 func TestLabelServiceGetClanLabelsFromAPI(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{clanLabels: cocapi.LabelListResponse{Items: []cocapi.Label{{ID: 1, Name: "Clan War"}}}}
-	svc := NewLabelService(fakeAPI, &fakeLabelCache{}, time.Hour)
+	svc := NewLabelService(fakeAPI, &fakeLabelCache{})
 	resp, err := svc.GetClanLabels(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -55,7 +54,7 @@ func TestLabelServiceGetClanLabelsFromAPI(t *testing.T) {
 
 func TestLabelServiceGetPlayerLabels(t *testing.T) {
 	fakeAPI := &fakeCocapiClient{playerLabels: cocapi.LabelListResponse{Items: []cocapi.Label{{ID: 2, Name: "Active"}}}}
-	svc := NewLabelService(fakeAPI, &fakeLabelCache{}, time.Hour)
+	svc := NewLabelService(fakeAPI, &fakeLabelCache{})
 	resp, err := svc.GetPlayerLabels(context.Background())
 	if err != nil {
 		t.Fatalf("error: %v", err)

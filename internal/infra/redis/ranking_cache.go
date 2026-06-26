@@ -13,10 +13,11 @@ import (
 
 type RankingCache struct {
 	client *goredis.Client
+	ttl    time.Duration
 }
 
-func NewRankingCache(client *goredis.Client) *RankingCache {
-	return &RankingCache{client: client}
+func NewRankingCache(client *goredis.Client, ttl time.Duration) *RankingCache {
+	return &RankingCache{client: client, ttl: ttl}
 }
 
 func (c *RankingCache) GetLocations(ctx context.Context) (ranking.LocationListResponse, bool, error) {
@@ -37,7 +38,7 @@ func (c *RankingCache) GetLocations(ctx context.Context) (ranking.LocationListRe
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetLocations(ctx context.Context, resp ranking.LocationListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetLocations(ctx context.Context, resp ranking.LocationListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -45,7 +46,7 @@ func (c *RankingCache) SetLocations(ctx context.Context, resp ranking.LocationLi
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:locations", data, ttl).Err()
+	return c.client.Set(ctx, "ranking:locations", data, c.ttl).Err()
 }
 
 func (c *RankingCache) GetClanRanking(ctx context.Context, locationID string) (ranking.ClanRankingListResponse, bool, error) {
@@ -66,7 +67,7 @@ func (c *RankingCache) GetClanRanking(ctx context.Context, locationID string) (r
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -74,7 +75,7 @@ func (c *RankingCache) SetClanRanking(ctx context.Context, locationID string, re
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:clan:"+locationID, data, ttl).Err()
+	return c.client.Set(ctx, "ranking:clan:"+locationID, data, c.ttl).Err()
 }
 
 func (c *RankingCache) GetPlayerRanking(ctx context.Context, locationID string) (ranking.PlayerRankingListResponse, bool, error) {
@@ -95,7 +96,7 @@ func (c *RankingCache) GetPlayerRanking(ctx context.Context, locationID string) 
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -103,7 +104,7 @@ func (c *RankingCache) SetPlayerRanking(ctx context.Context, locationID string, 
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:player:"+locationID, data, ttl).Err()
+	return c.client.Set(ctx, "ranking:player:"+locationID, data, c.ttl).Err()
 }
 
 func (c *RankingCache) GetClanCapitalRanking(ctx context.Context, locationID string) (ranking.ClanCapitalRankingListResponse, bool, error) {
@@ -124,7 +125,7 @@ func (c *RankingCache) GetClanCapitalRanking(ctx context.Context, locationID str
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -132,7 +133,7 @@ func (c *RankingCache) SetClanCapitalRanking(ctx context.Context, locationID str
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:capital:"+locationID, data, ttl).Err()
+	return c.client.Set(ctx, "ranking:capital:"+locationID, data, c.ttl).Err()
 }
 
 func (c *RankingCache) GetClanBuilderBaseRanking(ctx context.Context, locationID string) (ranking.ClanBuilderBaseRankingListResponse, bool, error) {
@@ -153,7 +154,7 @@ func (c *RankingCache) GetClanBuilderBaseRanking(ctx context.Context, locationID
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -161,7 +162,7 @@ func (c *RankingCache) SetClanBuilderBaseRanking(ctx context.Context, locationID
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:builder-clan:"+locationID, data, ttl).Err()
+	return c.client.Set(ctx, "ranking:builder-clan:"+locationID, data, c.ttl).Err()
 }
 
 func (c *RankingCache) GetPlayerBuilderBaseRanking(ctx context.Context, locationID string) (ranking.PlayerBuilderBaseRankingListResponse, bool, error) {
@@ -182,7 +183,7 @@ func (c *RankingCache) GetPlayerBuilderBaseRanking(ctx context.Context, location
 	return resp, true, nil
 }
 
-func (c *RankingCache) SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse, ttl time.Duration) error {
+func (c *RankingCache) SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -190,5 +191,5 @@ func (c *RankingCache) SetPlayerBuilderBaseRanking(ctx context.Context, location
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "ranking:builder-player:"+locationID, data, ttl).Err()
+	return c.client.Set(ctx, "ranking:builder-player:"+locationID, data, c.ttl).Err()
 }

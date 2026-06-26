@@ -14,10 +14,11 @@ import (
 
 type LeagueCache struct {
 	client *goredis.Client
+	ttl    time.Duration
 }
 
-func NewLeagueCache(client *goredis.Client) *LeagueCache {
-	return &LeagueCache{client: client}
+func NewLeagueCache(client *goredis.Client, ttl time.Duration) *LeagueCache {
+	return &LeagueCache{client: client, ttl: ttl}
 }
 
 func (c *LeagueCache) GetLeagues(ctx context.Context) (league.LeagueListResponse, bool, error) {
@@ -38,7 +39,7 @@ func (c *LeagueCache) GetLeagues(ctx context.Context) (league.LeagueListResponse
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetLeagues(ctx context.Context, resp league.LeagueListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagues(ctx context.Context, resp league.LeagueListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -46,7 +47,7 @@ func (c *LeagueCache) SetLeagues(ctx context.Context, resp league.LeagueListResp
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:list", data, ttl).Err()
+	return c.client.Set(ctx, "league:list", data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeague(ctx context.Context, id string) (league.League, bool, error) {
@@ -67,7 +68,7 @@ func (c *LeagueCache) GetLeague(ctx context.Context, id string) (league.League, 
 	return l, true, nil
 }
 
-func (c *LeagueCache) SetLeague(ctx context.Context, id string, l league.League, ttl time.Duration) error {
+func (c *LeagueCache) SetLeague(ctx context.Context, id string, l league.League) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -75,7 +76,7 @@ func (c *LeagueCache) SetLeague(ctx context.Context, id string, l league.League,
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:"+id, data, ttl).Err()
+	return c.client.Set(ctx, "league:"+id, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, bool, error) {
@@ -96,7 +97,7 @@ func (c *LeagueCache) GetLeagueSeasons(ctx context.Context, leagueID string) (le
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagueSeasons(ctx context.Context, leagueID string, resp league.LeagueSeasonListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -104,7 +105,7 @@ func (c *LeagueCache) SetLeagueSeasons(ctx context.Context, leagueID string, res
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:seasons:"+leagueID, data, ttl).Err()
+	return c.client.Set(ctx, "league:seasons:"+leagueID, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, bool, error) {
@@ -125,7 +126,7 @@ func (c *LeagueCache) GetLeagueSeasonRankings(ctx context.Context, leagueID, sea
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagueSeasonRankings(ctx context.Context, leagueID, season string, resp league.LeagueSeasonRankingListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -133,7 +134,7 @@ func (c *LeagueCache) SetLeagueSeasonRankings(ctx context.Context, leagueID, sea
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:rankings:"+leagueID+":"+season, data, ttl).Err()
+	return c.client.Set(ctx, "league:rankings:"+leagueID+":"+season, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, bool, error) {
@@ -154,7 +155,7 @@ func (c *LeagueCache) GetLeagueTiers(ctx context.Context, leagueID, season strin
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagueTiers(ctx context.Context, leagueID, season string, resp league.LeagueTierListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -162,7 +163,7 @@ func (c *LeagueCache) SetLeagueTiers(ctx context.Context, leagueID, season strin
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:tiers:"+leagueID+":"+season, data, ttl).Err()
+	return c.client.Set(ctx, "league:tiers:"+leagueID+":"+season, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, bool, error) {
@@ -183,7 +184,7 @@ func (c *LeagueCache) GetLeagueTier(ctx context.Context, tierID string) (league.
 	return t, true, nil
 }
 
-func (c *LeagueCache) SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagueTier(ctx context.Context, tierID string, t league.LeagueTier) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -191,7 +192,7 @@ func (c *LeagueCache) SetLeagueTier(ctx context.Context, tierID string, t league
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:tier:"+tierID, data, ttl).Err()
+	return c.client.Set(ctx, "league:tier:"+tierID, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, bool, error) {
@@ -213,7 +214,7 @@ func (c *LeagueCache) GetLeagueHistory(ctx context.Context, playerTag string) (l
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetLeagueHistory(ctx context.Context, playerTag string, resp league.LeagueSeasonResultListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -222,7 +223,7 @@ func (c *LeagueCache) SetLeagueHistory(ctx context.Context, playerTag string, re
 		return err
 	}
 	tag := normalizePlayerTagForCache(playerTag)
-	return c.client.Set(ctx, "league:history:"+tag, data, ttl).Err()
+	return c.client.Set(ctx, "league:history:"+tag, data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, bool, error) {
@@ -243,7 +244,7 @@ func (c *LeagueCache) GetWarLeagues(ctx context.Context) (league.WarLeagueListRe
 	return resp, true, nil
 }
 
-func (c *LeagueCache) SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse, ttl time.Duration) error {
+func (c *LeagueCache) SetWarLeagues(ctx context.Context, resp league.WarLeagueListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -251,7 +252,7 @@ func (c *LeagueCache) SetWarLeagues(ctx context.Context, resp league.WarLeagueLi
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:war-list", data, ttl).Err()
+	return c.client.Set(ctx, "league:war-list", data, c.ttl).Err()
 }
 
 func (c *LeagueCache) GetWarLeague(ctx context.Context, id string) (league.WarLeague, bool, error) {
@@ -272,7 +273,7 @@ func (c *LeagueCache) GetWarLeague(ctx context.Context, id string) (league.WarLe
 	return l, true, nil
 }
 
-func (c *LeagueCache) SetWarLeague(ctx context.Context, id string, l league.WarLeague, ttl time.Duration) error {
+func (c *LeagueCache) SetWarLeague(ctx context.Context, id string, l league.WarLeague) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -280,7 +281,7 @@ func (c *LeagueCache) SetWarLeague(ctx context.Context, id string, l league.WarL
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "league:war:"+id, data, ttl).Err()
+	return c.client.Set(ctx, "league:war:"+id, data, c.ttl).Err()
 }
 
 func normalizePlayerTagForCache(tag string) string {

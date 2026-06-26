@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
@@ -13,17 +12,17 @@ import (
 
 type rankingCache interface {
 	GetLocations(ctx context.Context) (ranking.LocationListResponse, bool, error)
-	SetLocations(ctx context.Context, resp ranking.LocationListResponse, ttl time.Duration) error
+	SetLocations(ctx context.Context, resp ranking.LocationListResponse) error
 	GetClanRanking(ctx context.Context, locationID string) (ranking.ClanRankingListResponse, bool, error)
-	SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse, ttl time.Duration) error
+	SetClanRanking(ctx context.Context, locationID string, resp ranking.ClanRankingListResponse) error
 	GetPlayerRanking(ctx context.Context, locationID string) (ranking.PlayerRankingListResponse, bool, error)
-	SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse, ttl time.Duration) error
+	SetPlayerRanking(ctx context.Context, locationID string, resp ranking.PlayerRankingListResponse) error
 	GetClanCapitalRanking(ctx context.Context, locationID string) (ranking.ClanCapitalRankingListResponse, bool, error)
-	SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse, ttl time.Duration) error
+	SetClanCapitalRanking(ctx context.Context, locationID string, resp ranking.ClanCapitalRankingListResponse) error
 	GetClanBuilderBaseRanking(ctx context.Context, locationID string) (ranking.ClanBuilderBaseRankingListResponse, bool, error)
-	SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse, ttl time.Duration) error
+	SetClanBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.ClanBuilderBaseRankingListResponse) error
 	GetPlayerBuilderBaseRanking(ctx context.Context, locationID string) (ranking.PlayerBuilderBaseRankingListResponse, bool, error)
-	SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse, ttl time.Duration) error
+	SetPlayerBuilderBaseRanking(ctx context.Context, locationID string, resp ranking.PlayerBuilderBaseRankingListResponse) error
 }
 
 type cocapiRankingClient interface {
@@ -36,16 +35,12 @@ type cocapiRankingClient interface {
 }
 
 type RankingService struct {
-	cocapi   cocapiRankingClient
-	cache    rankingCache
-	cacheTTL time.Duration
+	cocapi cocapiRankingClient
+	cache  rankingCache
 }
 
-func NewRankingService(cocapi cocapiRankingClient, cache rankingCache, ttl time.Duration) *RankingService {
-	if ttl <= 0 {
-		ttl = 10 * time.Minute
-	}
-	return &RankingService{cocapi: cocapi, cache: cache, cacheTTL: ttl}
+func NewRankingService(cocapi cocapiRankingClient, cache rankingCache) *RankingService {
+	return &RankingService{cocapi: cocapi, cache: cache}
 }
 
 func (s *RankingService) GetLocations(ctx context.Context) (ranking.LocationListResponse, error) {
@@ -67,7 +62,7 @@ func (s *RankingService) GetLocations(ctx context.Context) (ranking.LocationList
 		})
 	}
 	if s.cache != nil {
-		_ = s.cache.SetLocations(ctx, resp, s.cacheTTL)
+		_ = s.cache.SetLocations(ctx, resp)
 	}
 	return resp, nil
 }
@@ -92,7 +87,7 @@ func (s *RankingService) GetClanRanking(ctx context.Context, locationID string) 
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetClanRanking(ctx, locationID, resp, s.cacheTTL)
+		_ = s.cache.SetClanRanking(ctx, locationID, resp)
 	}
 	return resp, nil
 }
@@ -117,7 +112,7 @@ func (s *RankingService) GetPlayerRanking(ctx context.Context, locationID string
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetPlayerRanking(ctx, locationID, resp, s.cacheTTL)
+		_ = s.cache.SetPlayerRanking(ctx, locationID, resp)
 	}
 	return resp, nil
 }
@@ -142,7 +137,7 @@ func (s *RankingService) GetClanCapitalRanking(ctx context.Context, locationID s
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetClanCapitalRanking(ctx, locationID, resp, s.cacheTTL)
+		_ = s.cache.SetClanCapitalRanking(ctx, locationID, resp)
 	}
 	return resp, nil
 }
@@ -167,7 +162,7 @@ func (s *RankingService) GetClanBuilderBaseRanking(ctx context.Context, location
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetClanBuilderBaseRanking(ctx, locationID, resp, s.cacheTTL)
+		_ = s.cache.SetClanBuilderBaseRanking(ctx, locationID, resp)
 	}
 	return resp, nil
 }
@@ -192,7 +187,7 @@ func (s *RankingService) GetPlayerBuilderBaseRanking(ctx context.Context, locati
 		resp.Items = append(resp.Items, item)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetPlayerBuilderBaseRanking(ctx, locationID, resp, s.cacheTTL)
+		_ = s.cache.SetPlayerBuilderBaseRanking(ctx, locationID, resp)
 	}
 	return resp, nil
 }

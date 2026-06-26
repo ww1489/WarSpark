@@ -13,10 +13,11 @@ import (
 
 type LabelCache struct {
 	client *goredis.Client
+	ttl    time.Duration
 }
 
-func NewLabelCache(client *goredis.Client) *LabelCache {
-	return &LabelCache{client: client}
+func NewLabelCache(client *goredis.Client, ttl time.Duration) *LabelCache {
+	return &LabelCache{client: client, ttl: ttl}
 }
 
 func (c *LabelCache) GetClanLabels(ctx context.Context) (label.LabelListResponse, bool, error) {
@@ -37,7 +38,7 @@ func (c *LabelCache) GetClanLabels(ctx context.Context) (label.LabelListResponse
 	return resp, true, nil
 }
 
-func (c *LabelCache) SetClanLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error {
+func (c *LabelCache) SetClanLabels(ctx context.Context, resp label.LabelListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -45,7 +46,7 @@ func (c *LabelCache) SetClanLabels(ctx context.Context, resp label.LabelListResp
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "label:clan", data, ttl).Err()
+	return c.client.Set(ctx, "label:clan", data, c.ttl).Err()
 }
 
 func (c *LabelCache) GetPlayerLabels(ctx context.Context) (label.LabelListResponse, bool, error) {
@@ -66,7 +67,7 @@ func (c *LabelCache) GetPlayerLabels(ctx context.Context) (label.LabelListRespon
 	return resp, true, nil
 }
 
-func (c *LabelCache) SetPlayerLabels(ctx context.Context, resp label.LabelListResponse, ttl time.Duration) error {
+func (c *LabelCache) SetPlayerLabels(ctx context.Context, resp label.LabelListResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -74,5 +75,5 @@ func (c *LabelCache) SetPlayerLabels(ctx context.Context, resp label.LabelListRe
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, "label:player", data, ttl).Err()
+	return c.client.Set(ctx, "label:player", data, c.ttl).Err()
 }
