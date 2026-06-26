@@ -13,6 +13,8 @@ const (
 	ErrorWarNotFound        = "war_not_found"
 	ErrorAPIResponseInvalid = "api_response_invalid"
 	ErrorSnapshotNotFound   = "snapshot_not_found"
+	ErrorClanNotFound       = "clan_not_found"
+	ErrorPlayerNotFound     = "player_not_found"
 )
 
 var ErrSnapshotNotFound = errors.New("war snapshot not found")
