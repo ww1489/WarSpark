@@ -34,63 +34,95 @@ func NewLeagueController(service LeagueReader) *LeagueController {
 
 func (c *LeagueController) GetLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetLeagues(ctx.Request.Context())
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetLeague(ctx *gin.Context) {
 	id := ctx.Param("id")
 	l, err := c.service.GetLeague(ctx.Request.Context(), id)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, l)
 }
 
 func (c *LeagueController) GetLeagueSeasons(ctx *gin.Context) {
 	id := ctx.Param("id")
 	resp, err := c.service.GetLeagueSeasons(ctx.Request.Context(), id)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetLeagueSeasonRankings(ctx *gin.Context) {
-	id := ctx.Param("id"); season := ctx.Param("season")
+	id := ctx.Param("id")
+	season := ctx.Param("season")
 	resp, err := c.service.GetLeagueSeasonRankings(ctx.Request.Context(), id, season)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetLeagueTiers(ctx *gin.Context) {
-	id := ctx.Param("id"); season := ctx.Param("season")
+	id := ctx.Param("id")
+	season := ctx.Param("season")
 	resp, err := c.service.GetLeagueTiers(ctx.Request.Context(), id, season)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetLeagueTier(ctx *gin.Context) {
 	tierID := ctx.Param("tier")
 	t, err := c.service.GetLeagueTier(ctx.Request.Context(), tierID)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, t)
 }
 
 func (c *LeagueController) GetLeagueHistory(ctx *gin.Context) {
 	playerTag := ctx.Query("player_tag")
-	if playerTag == "" { utils.Fail(ctx, utils.NewError(utils.ErrMissingField, "player_tag is required")); return }
+	if playerTag == "" {
+		utils.Fail(ctx, utils.NewError(utils.ErrMissingField, "player_tag is required"))
+		return
+	}
 	resp, err := c.service.GetLeagueHistory(ctx.Request.Context(), playerTag)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetWarLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetWarLeagues(ctx.Request.Context())
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LeagueController) GetWarLeague(ctx *gin.Context) {
 	id := ctx.Param("id")
 	l, err := c.service.GetWarLeague(ctx.Request.Context(), id)
-	if err != nil { failLeague(ctx, err); return }
+	if err != nil {
+		failLeague(ctx, err)
+		return
+	}
 	utils.OK(ctx, l)
 }
 

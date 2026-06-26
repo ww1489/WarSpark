@@ -17,8 +17,12 @@ type fakeLabelService struct {
 	err          error
 }
 
-func (f *fakeLabelService) GetClanLabels(ctx context.Context) (label.LabelListResponse, error) { return f.clanLabels, f.err }
-func (f *fakeLabelService) GetPlayerLabels(ctx context.Context) (label.LabelListResponse, error) { return f.playerLabels, f.err }
+func (f *fakeLabelService) GetClanLabels(ctx context.Context) (label.LabelListResponse, error) {
+	return f.clanLabels, f.err
+}
+func (f *fakeLabelService) GetPlayerLabels(ctx context.Context) (label.LabelListResponse, error) {
+	return f.playerLabels, f.err
+}
 
 func TestLabelControllerGetClanLabels(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -29,7 +33,9 @@ func TestLabelControllerGetClanLabels(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/clans/labels", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLabelControllerGetPlayerLabels(t *testing.T) {
@@ -41,5 +47,7 @@ func TestLabelControllerGetPlayerLabels(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/players/labels", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }

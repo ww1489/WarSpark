@@ -31,42 +31,60 @@ func NewRankingController(service RankingReader) *RankingController {
 
 func (c *RankingController) GetLocations(ctx *gin.Context) {
 	resp, err := c.service.GetLocations(ctx.Request.Context())
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *RankingController) GetClanRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanRanking(ctx.Request.Context(), locationID)
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *RankingController) GetPlayerRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetPlayerRanking(ctx.Request.Context(), locationID)
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *RankingController) GetClanCapitalRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanCapitalRanking(ctx.Request.Context(), locationID)
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *RankingController) GetClanBuilderBaseRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanBuilderBaseRanking(ctx.Request.Context(), locationID)
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *RankingController) GetPlayerBuilderBaseRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetPlayerBuilderBaseRanking(ctx.Request.Context(), locationID)
-	if err != nil { failRanking(ctx, err); return }
+	if err != nil {
+		failRanking(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 

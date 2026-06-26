@@ -7,24 +7,24 @@ import (
 )
 
 type fakeCocapiClient struct {
-	locations       cocapi.LocationListResponse
-	clanRanking     cocapi.ClanRankingListResponse
-	playerRanking   cocapi.PlayerRankingListResponse
-	capitalRanking  cocapi.ClanCapitalRankingListResponse
-	builderClan     cocapi.ClanBuilderBaseRankingListResponse
-	builderPlayer   cocapi.PlayerBuilderBaseRankingListResponse
-	leagues         cocapi.LeagueListResponse
-	league          cocapi.League
-	leagueSeasons   cocapi.LeagueSeasonListResponse
-	leagueRankings  cocapi.PlayerRankingListResponse
-	leagueTiers     cocapi.LeagueTierListResponse
-	leagueTier      cocapi.LeagueTier
-	leagueHistory   cocapi.LeagueSeasonResultListResponse
-	warLeagues      cocapi.WarLeagueListResponse
-	warLeague       cocapi.WarLeague
-	clanLabels      cocapi.LabelListResponse
-	playerLabels    cocapi.LabelListResponse
-	err             error
+	locations      cocapi.LocationListResponse
+	clanRanking    cocapi.ClanRankingListResponse
+	playerRanking  cocapi.PlayerRankingListResponse
+	capitalRanking cocapi.ClanCapitalRankingListResponse
+	builderClan    cocapi.ClanBuilderBaseRankingListResponse
+	builderPlayer  cocapi.PlayerBuilderBaseRankingListResponse
+	leagues        cocapi.LeagueListResponse
+	league         cocapi.League
+	leagueSeasons  cocapi.LeagueSeasonListResponse
+	leagueRankings cocapi.PlayerRankingListResponse
+	leagueTiers    cocapi.LeagueTierListResponse
+	leagueTier     cocapi.LeagueTier
+	leagueHistory  cocapi.LeagueSeasonResultListResponse
+	warLeagues     cocapi.WarLeagueListResponse
+	warLeague      cocapi.WarLeague
+	clanLabels     cocapi.LabelListResponse
+	playerLabels   cocapi.LabelListResponse
+	err            error
 }
 
 func (f *fakeCocapiClient) GetLocations(ctx context.Context, query cocapi.QueryGetLocations) (cocapi.LocationListResponse, error) {

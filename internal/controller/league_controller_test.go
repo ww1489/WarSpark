@@ -25,15 +25,33 @@ type fakeLeagueService struct {
 	err        error
 }
 
-func (f *fakeLeagueService) GetLeagues(ctx context.Context) (league.LeagueListResponse, error) { return f.leagues, f.err }
-func (f *fakeLeagueService) GetLeague(ctx context.Context, id string) (league.League, error) { return f.l, f.err }
-func (f *fakeLeagueService) GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, error) { return f.seasons, f.err }
-func (f *fakeLeagueService) GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, error) { return f.rankings, f.err }
-func (f *fakeLeagueService) GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, error) { return f.tiers, f.err }
-func (f *fakeLeagueService) GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, error) { return f.tier, f.err }
-func (f *fakeLeagueService) GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, error) { return f.history, f.err }
-func (f *fakeLeagueService) GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, error) { return f.warLeagues, f.err }
-func (f *fakeLeagueService) GetWarLeague(ctx context.Context, id string) (league.WarLeague, error) { return f.warLeague, f.err }
+func (f *fakeLeagueService) GetLeagues(ctx context.Context) (league.LeagueListResponse, error) {
+	return f.leagues, f.err
+}
+func (f *fakeLeagueService) GetLeague(ctx context.Context, id string) (league.League, error) {
+	return f.l, f.err
+}
+func (f *fakeLeagueService) GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, error) {
+	return f.seasons, f.err
+}
+func (f *fakeLeagueService) GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, error) {
+	return f.rankings, f.err
+}
+func (f *fakeLeagueService) GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, error) {
+	return f.tiers, f.err
+}
+func (f *fakeLeagueService) GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, error) {
+	return f.tier, f.err
+}
+func (f *fakeLeagueService) GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, error) {
+	return f.history, f.err
+}
+func (f *fakeLeagueService) GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, error) {
+	return f.warLeagues, f.err
+}
+func (f *fakeLeagueService) GetWarLeague(ctx context.Context, id string) (league.WarLeague, error) {
+	return f.warLeague, f.err
+}
 
 func TestLeagueControllerGetLeagues(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -44,7 +62,9 @@ func TestLeagueControllerGetLeagues(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeague(t *testing.T) {
@@ -56,7 +76,9 @@ func TestLeagueControllerGetLeague(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueSeasons(t *testing.T) {
@@ -68,7 +90,9 @@ func TestLeagueControllerGetLeagueSeasons(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueSeasonRankings(t *testing.T) {
@@ -80,7 +104,9 @@ func TestLeagueControllerGetLeagueSeasonRankings(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons/2026-01/rankings", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueTiers(t *testing.T) {
@@ -92,7 +118,9 @@ func TestLeagueControllerGetLeagueTiers(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons/2026-01/tiers", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueTier(t *testing.T) {
@@ -104,7 +132,9 @@ func TestLeagueControllerGetLeagueTier(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons/2026-01/tiers/1", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueHistory(t *testing.T) {
@@ -116,7 +146,9 @@ func TestLeagueControllerGetLeagueHistory(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons/2026-01/tiers/1/history?player_tag=%23P1ABC", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetWarLeagues(t *testing.T) {
@@ -128,7 +160,9 @@ func TestLeagueControllerGetWarLeagues(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/war-leagues", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetWarLeague(t *testing.T) {
@@ -140,7 +174,9 @@ func TestLeagueControllerGetWarLeague(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/war-leagues/1", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestLeagueControllerNotFound(t *testing.T) {
@@ -152,7 +188,9 @@ func TestLeagueControllerNotFound(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/999", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusNotFound { t.Fatalf("status = %d, want 404", rec.Code) }
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
+	}
 }
 
 func TestLeagueControllerGetLeagueHistoryMissingTag(t *testing.T) {
@@ -164,5 +202,7 @@ func TestLeagueControllerGetLeagueHistoryMissingTag(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/leagues/1/seasons/2026-01/tiers/1/history", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusUnprocessableEntity { t.Fatalf("status = %d, want 422", rec.Code) }
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("status = %d, want 422", rec.Code)
+	}
 }

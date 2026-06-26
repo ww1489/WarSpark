@@ -51,135 +51,201 @@ type LeagueService struct {
 }
 
 func NewLeagueService(cocapi cocapiLeagueClient, cache leagueCache, ttl time.Duration) *LeagueService {
-	if ttl <= 0 { ttl = 30 * time.Minute }
+	if ttl <= 0 {
+		ttl = 30 * time.Minute
+	}
 	return &LeagueService{cocapi: cocapi, cache: cache, cacheTTL: ttl}
 }
 
 func (s *LeagueService) GetLeagues(ctx context.Context) (league.LeagueListResponse, error) {
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetLeagues(ctx)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetLeagues(ctx, cocapi.QueryGetLeagues{})
-	if err != nil { return league.LeagueListResponse{}, mapCocapiLeagueError(err, "") }
+	if err != nil {
+		return league.LeagueListResponse{}, mapCocapiLeagueError(err, "")
+	}
 	resp := league.LeagueListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, l := range cocapiResp.Items {
 		resp.Items = append(resp.Items, league.League{ID: l.ID, Name: string(l.Name), IconURLs: l.IconURLs})
 	}
-	if s.cache != nil { _ = s.cache.SetLeagues(ctx, resp, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetLeagues(ctx, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetLeague(ctx context.Context, leagueID string) (league.League, error) {
 	if s.cache != nil {
 		l, ok, err := s.cache.GetLeague(ctx, leagueID)
-		if err == nil && ok { return l, nil }
+		if err == nil && ok {
+			return l, nil
+		}
 	}
 	l, err := s.cocapi.GetLeague(ctx, leagueID)
-	if err != nil { return league.League{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.League{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	dom := league.League{ID: l.ID, Name: string(l.Name), IconURLs: l.IconURLs}
-	if s.cache != nil { _ = s.cache.SetLeague(ctx, leagueID, dom, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetLeague(ctx, leagueID, dom, s.cacheTTL)
+	}
 	return dom, nil
 }
 
 func (s *LeagueService) GetLeagueSeasons(ctx context.Context, leagueID string) (league.LeagueSeasonListResponse, error) {
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetLeagueSeasons(ctx, leagueID)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetLeagueSeasons(ctx, leagueID, cocapi.QueryGetLeagueSeasons{})
-	if err != nil { return league.LeagueSeasonListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.LeagueSeasonListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	resp := league.LeagueSeasonListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
-	for _, s := range cocapiResp.Items { resp.Items = append(resp.Items, league.LeagueSeason{ID: s.ID}) }
-	if s.cache != nil { _ = s.cache.SetLeagueSeasons(ctx, leagueID, resp, s.cacheTTL) }
+	for _, s := range cocapiResp.Items {
+		resp.Items = append(resp.Items, league.LeagueSeason{ID: s.ID})
+	}
+	if s.cache != nil {
+		_ = s.cache.SetLeagueSeasons(ctx, leagueID, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetLeagueSeasonRankings(ctx context.Context, leagueID, season string) (league.LeagueSeasonRankingListResponse, error) {
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetLeagueSeasonRankings(ctx, leagueID, season)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetLeagueSeasonRankings(ctx, leagueID, season, cocapi.QueryGetLeagueSeasonRankings{})
-	if err != nil { return league.LeagueSeasonRankingListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.LeagueSeasonRankingListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	resp := league.LeagueSeasonRankingListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
 		item := league.LeagueSeasonRankingEntry{Tag: entry.Tag, Name: entry.Name, ExpLevel: entry.ExpLevel, Trophies: entry.Trophies, Rank: entry.Rank, PreviousRank: entry.PreviousRank, AttackWins: entry.AttackWins, DefenseWins: entry.DefenseWins}
-		if entry.Clan.Tag != "" { item.Clan = &league.ClanRef{Tag: entry.Clan.Tag, Name: entry.Clan.Name, BadgeURLs: entry.Clan.BadgeURLs} }
+		if entry.Clan.Tag != "" {
+			item.Clan = &league.ClanRef{Tag: entry.Clan.Tag, Name: entry.Clan.Name, BadgeURLs: entry.Clan.BadgeURLs}
+		}
 		resp.Items = append(resp.Items, item)
 	}
-	if s.cache != nil { _ = s.cache.SetLeagueSeasonRankings(ctx, leagueID, season, resp, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetLeagueSeasonRankings(ctx, leagueID, season, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetLeagueTiers(ctx context.Context, leagueID, season string) (league.LeagueTierListResponse, error) {
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetLeagueTiers(ctx, leagueID, season)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetLeagueTiers(ctx, cocapi.QueryGetLeagueTiers{})
-	if err != nil { return league.LeagueTierListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.LeagueTierListResponse{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	resp := league.LeagueTierListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
-	for _, t := range cocapiResp.Items { resp.Items = append(resp.Items, league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs}) }
-	if s.cache != nil { _ = s.cache.SetLeagueTiers(ctx, leagueID, season, resp, s.cacheTTL) }
+	for _, t := range cocapiResp.Items {
+		resp.Items = append(resp.Items, league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs})
+	}
+	if s.cache != nil {
+		_ = s.cache.SetLeagueTiers(ctx, leagueID, season, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetLeagueTier(ctx context.Context, tierID string) (league.LeagueTier, error) {
 	if s.cache != nil {
 		t, ok, err := s.cache.GetLeagueTier(ctx, tierID)
-		if err == nil && ok { return t, nil }
+		if err == nil && ok {
+			return t, nil
+		}
 	}
 	t, err := s.cocapi.GetLeagueTier(ctx, tierID)
-	if err != nil { return league.LeagueTier{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.LeagueTier{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	dom := league.LeagueTier{ID: t.ID, Name: string(t.Name), IconURLs: t.IconURLs}
-	if s.cache != nil { _ = s.cache.SetLeagueTier(ctx, tierID, dom, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetLeagueTier(ctx, tierID, dom, s.cacheTTL)
+	}
 	return dom, nil
 }
 
 func (s *LeagueService) GetLeagueHistory(ctx context.Context, playerTag string) (league.LeagueSeasonResultListResponse, error) {
 	normalizedTag, err := NormalizeClanTag(playerTag)
-	if err != nil { return league.LeagueSeasonResultListResponse{}, err }
+	if err != nil {
+		return league.LeagueSeasonResultListResponse{}, err
+	}
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetLeagueHistory(ctx, normalizedTag)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetLeagueHistory(ctx, normalizedTag)
-	if err != nil { return league.LeagueSeasonResultListResponse{}, mapCocapiLeagueError(err, "") }
+	if err != nil {
+		return league.LeagueSeasonResultListResponse{}, mapCocapiLeagueError(err, "")
+	}
 	resp := league.LeagueSeasonResultListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
 	for _, r := range cocapiResp.Items {
 		resp.Items = append(resp.Items, league.LeagueSeasonResult{
-			Trophies: r.LeagueTrophies,
+			Trophies:  r.LeagueTrophies,
 			Placement: r.Placement, AttackWins: r.AttackWins, AttackLosses: r.AttackLosses, AttackStars: r.AttackStars,
 			DefenseWins: r.DefenseWins, DefenseLosses: r.DefenseLosses, DefenseStars: r.DefenseStars, MaxBattles: r.MaxBattles,
 		})
 	}
-	if s.cache != nil { _ = s.cache.SetLeagueHistory(ctx, normalizedTag, resp, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetLeagueHistory(ctx, normalizedTag, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetWarLeagues(ctx context.Context) (league.WarLeagueListResponse, error) {
 	if s.cache != nil {
 		resp, ok, err := s.cache.GetWarLeagues(ctx)
-		if err == nil && ok { return resp, nil }
+		if err == nil && ok {
+			return resp, nil
+		}
 	}
 	cocapiResp, err := s.cocapi.GetWarLeagues(ctx, cocapi.QueryGetWarLeagues{})
-	if err != nil { return league.WarLeagueListResponse{}, mapCocapiLeagueError(err, "") }
+	if err != nil {
+		return league.WarLeagueListResponse{}, mapCocapiLeagueError(err, "")
+	}
 	resp := league.WarLeagueListResponse{Paging: toDomainLeaguePaging(cocapiResp.Paging)}
-	for _, wl := range cocapiResp.Items { resp.Items = append(resp.Items, league.WarLeague{ID: wl.ID, Name: string(wl.Name)}) }
-	if s.cache != nil { _ = s.cache.SetWarLeagues(ctx, resp, s.cacheTTL) }
+	for _, wl := range cocapiResp.Items {
+		resp.Items = append(resp.Items, league.WarLeague{ID: wl.ID, Name: string(wl.Name)})
+	}
+	if s.cache != nil {
+		_ = s.cache.SetWarLeagues(ctx, resp, s.cacheTTL)
+	}
 	return resp, nil
 }
 
 func (s *LeagueService) GetWarLeague(ctx context.Context, leagueID string) (league.WarLeague, error) {
 	if s.cache != nil {
 		l, ok, err := s.cache.GetWarLeague(ctx, leagueID)
-		if err == nil && ok { return l, nil }
+		if err == nil && ok {
+			return l, nil
+		}
 	}
 	wl, err := s.cocapi.GetWarLeague(ctx, leagueID)
-	if err != nil { return league.WarLeague{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound) }
+	if err != nil {
+		return league.WarLeague{}, mapCocapiLeagueError(err, wardomain.ErrorLeagueNotFound)
+	}
 	dom := league.WarLeague{ID: wl.ID, Name: string(wl.Name)}
-	if s.cache != nil { _ = s.cache.SetWarLeague(ctx, leagueID, dom, s.cacheTTL) }
+	if s.cache != nil {
+		_ = s.cache.SetWarLeague(ctx, leagueID, dom, s.cacheTTL)
+	}
 	return dom, nil
 }
 

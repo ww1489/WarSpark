@@ -27,13 +27,19 @@ func NewLabelController(service LabelReader) *LabelController {
 
 func (c *LabelController) GetClanLabels(ctx *gin.Context) {
 	resp, err := c.service.GetClanLabels(ctx.Request.Context())
-	if err != nil { failLabel(ctx, err); return }
+	if err != nil {
+		failLabel(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 
 func (c *LabelController) GetPlayerLabels(ctx *gin.Context) {
 	resp, err := c.service.GetPlayerLabels(ctx.Request.Context())
-	if err != nil { failLabel(ctx, err); return }
+	if err != nil {
+		failLabel(ctx, err)
+		return
+	}
 	utils.OK(ctx, resp)
 }
 

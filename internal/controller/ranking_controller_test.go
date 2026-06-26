@@ -23,12 +23,24 @@ type fakeRankingService struct {
 	err            error
 }
 
-func (f *fakeRankingService) GetLocations(ctx context.Context) (ranking.LocationListResponse, error) { return f.locations, f.err }
-func (f *fakeRankingService) GetClanRanking(ctx context.Context, locationID string) (ranking.ClanRankingListResponse, error) { return f.clanRanking, f.err }
-func (f *fakeRankingService) GetPlayerRanking(ctx context.Context, locationID string) (ranking.PlayerRankingListResponse, error) { return f.playerRanking, f.err }
-func (f *fakeRankingService) GetClanCapitalRanking(ctx context.Context, locationID string) (ranking.ClanCapitalRankingListResponse, error) { return f.capitalRanking, f.err }
-func (f *fakeRankingService) GetClanBuilderBaseRanking(ctx context.Context, locationID string) (ranking.ClanBuilderBaseRankingListResponse, error) { return f.builderClan, f.err }
-func (f *fakeRankingService) GetPlayerBuilderBaseRanking(ctx context.Context, locationID string) (ranking.PlayerBuilderBaseRankingListResponse, error) { return f.builderPlayer, f.err }
+func (f *fakeRankingService) GetLocations(ctx context.Context) (ranking.LocationListResponse, error) {
+	return f.locations, f.err
+}
+func (f *fakeRankingService) GetClanRanking(ctx context.Context, locationID string) (ranking.ClanRankingListResponse, error) {
+	return f.clanRanking, f.err
+}
+func (f *fakeRankingService) GetPlayerRanking(ctx context.Context, locationID string) (ranking.PlayerRankingListResponse, error) {
+	return f.playerRanking, f.err
+}
+func (f *fakeRankingService) GetClanCapitalRanking(ctx context.Context, locationID string) (ranking.ClanCapitalRankingListResponse, error) {
+	return f.capitalRanking, f.err
+}
+func (f *fakeRankingService) GetClanBuilderBaseRanking(ctx context.Context, locationID string) (ranking.ClanBuilderBaseRankingListResponse, error) {
+	return f.builderClan, f.err
+}
+func (f *fakeRankingService) GetPlayerBuilderBaseRanking(ctx context.Context, locationID string) (ranking.PlayerBuilderBaseRankingListResponse, error) {
+	return f.builderPlayer, f.err
+}
 
 func TestRankingControllerGetLocations(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -39,12 +51,16 @@ func TestRankingControllerGetLocations(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String()) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
 	var resp map[string]any
 	_ = json.Unmarshal(rec.Body.Bytes(), &resp)
 	data := resp["data"].(map[string]any)
 	items := data["items"].([]any)
-	if len(items) != 1 { t.Fatalf("len = %d", len(items)) }
+	if len(items) != 1 {
+		t.Fatalf("len = %d", len(items))
+	}
 }
 
 func TestRankingControllerGetClanRanking(t *testing.T) {
@@ -56,7 +72,9 @@ func TestRankingControllerGetClanRanking(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/global/rankings/clans", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestRankingControllerGetPlayerRanking(t *testing.T) {
@@ -68,7 +86,9 @@ func TestRankingControllerGetPlayerRanking(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/global/rankings/players", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestRankingControllerGetClanCapitalRanking(t *testing.T) {
@@ -80,7 +100,9 @@ func TestRankingControllerGetClanCapitalRanking(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/global/rankings/clans-capital", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestRankingControllerGetClanBuilderBaseRanking(t *testing.T) {
@@ -92,7 +114,9 @@ func TestRankingControllerGetClanBuilderBaseRanking(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/global/rankings/clans-builder-base", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestRankingControllerGetPlayerBuilderBaseRanking(t *testing.T) {
@@ -104,7 +128,9 @@ func TestRankingControllerGetPlayerBuilderBaseRanking(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/global/rankings/players-builder-base", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK { t.Fatalf("status = %d, want 200", rec.Code) }
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
 }
 
 func TestRankingControllerNotFound(t *testing.T) {
@@ -116,5 +142,7 @@ func TestRankingControllerNotFound(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/locations/999/rankings/clans", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusNotFound { t.Fatalf("status = %d, want 404", rec.Code) }
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
+	}
 }
