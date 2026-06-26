@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ww1489/WarSpark/internal/cocgen"
+	"github.com/ww1489/WarSpark/pkg/cocapi/cocgen"
 )
 
 // cocapi 命令管理 Clash of Clans API 客户端代码的同步与生成。

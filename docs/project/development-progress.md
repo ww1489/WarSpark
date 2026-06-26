@@ -114,7 +114,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 - 缓存:current_war 2min、CWL 5min(Redis,可配置),未命中才请求官方 API。
 - 快照落库:每次拉取 current war 生成 snapshot + members + targets,计算每位成员最佳防守结果(星数+摧毁率),对手成员自动生成 war_targets。
 - tag 校验:`NormalizeClanTag` 统一加 `#` 并校验 `^#?[A-Z0-9]{3,16}$`。
-- cocapi 独立包(2026-06-25 重构):`pkg/cocapi/` 从官方 Swagger 2.0 规范生成 35 端点客户端(types.go/api.go 生成,client.go/errors.go/tag.go 手写);`internal/cocgen/` 代码生成器 + `warspark cocapi syncapi/fetch/generate` 三子命令;`internal/infra/coc/client.go` 改写为 adapter,包装 `cocapi.Client` 实现 `service.WarAPIClient` 接口,转换 `cocapi.ClanWar`→`wardomain.CurrentWar`、`cocapi.ClanWarLeagueGroup`→`wardomain.CWLGroup`,错误经 `mapError` 映射为 `wardomain.Error`。service/controller/domain 层通过接口解耦,不感知 cocapi 包。
+- cocapi 独立包(2026-06-25 重构):`pkg/cocapi/` 从官方 Swagger 2.0 规范生成 35 端点客户端(types.go/api.go 生成,client.go/errors.go/tag.go 手写);`pkg/cocapi/cocgen/` 代码生成器 + `warspark cocapi syncapi/fetch/generate` 三子命令;`internal/infra/coc/client.go` 改写为 adapter,包装 `cocapi.Client` 实现 `service.WarAPIClient` 接口,转换 `cocapi.ClanWar`→`wardomain.CurrentWar`、`cocapi.ClanWarLeagueGroup`→`wardomain.CWLGroup`,错误经 `mapError` 映射为 `wardomain.Error`。service/controller/domain 层通过接口解耦,不感知 cocapi 包。
 
 ### 5.4 视频关联(video association)— 部分
 
@@ -151,7 +151,7 @@ Admin 接口(JWT 鉴权,authmw.Required):
 - 编译:`go build ./...` 通过(2026-06-25)。
 - 测试:`go test ./...` 全绿(14 个测试包 ok)。有测试的包:api/v1、config、controller、infra/coc、infra/logger、infra/mysql、middleware/auth、middleware/requestid、service、utils、worker、pkg/cocapi、pkg/jwt、pkg/snowflake。
 - 格式:`gofmt -l .` 无输出,全部文件符合格式(2026-06-25)。
-- 覆盖缺口(无测试文件):`cmd/warspark`、`internal/app`、`internal/cocgen`、`internal/domain/*`、`internal/infra/redis`、`internal/repository`、`middleware/cors|logging|recovery`。
+- 覆盖缺口(无测试文件):`cmd/warspark`、`internal/app`、`pkg/cocapi/cocgen`、`internal/domain/*`、`internal/infra/redis`、`internal/repository`、`middleware/cors|logging|recovery`。
 - 持久层风险:`internal/repository`(layout 31KB + image_search 14KB + war 4KB)无任何测试,SQL 正确性依赖人工与运行时验证,是最高价值补测点。
 - CI:[.github/workflows/ci.yml](/E:/Users/ww/Desktop/project/codex/project/WarSpark/.github/workflows/ci.yml)。
 - Swagger:`docs/swagger.*` 与 `docs/docs.go` 仍是模板生成内容,未随业务接口更新(main.go 描述仍是"Reusable Go REST API backend template")。
