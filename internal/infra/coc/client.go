@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 
+	clandomain "github.com/ww1489/WarSpark/internal/domain/clan"
 	wardomain "github.com/ww1489/WarSpark/internal/domain/war"
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 )
@@ -44,6 +45,37 @@ func (c *Client) CWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGro
 		return wardomain.CWLGroup{}, mapError(err)
 	}
 	return toDomainCWLGroup(group), nil
+}
+
+func (c *Client) Clan(ctx context.Context, clanTag string) (clandomain.ClanDetail, error) {
+	clan, err := c.api.GetClan(ctx, clanTag)
+	if err != nil {
+		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, wardomain.ErrorClanNotFound)
+	}
+	membersResp, err := c.api.GetClanMembers(ctx, clanTag, cocapi.QueryGetClanMembers{})
+	if err != nil {
+		return clandomain.ClanDetail{}, mapErrorWithNotFound(err, wardomain.ErrorClanNotFound)
+	}
+	return clandomain.ClanDetail{
+		Clan:    toDomainClanOverview(clan),
+		Members: toDomainClanMembers(membersResp.Items),
+	}, nil
+}
+
+func (c *Client) Player(ctx context.Context, playerTag string) (clandomain.PlayerOverview, error) {
+	player, err := c.api.GetPlayer(ctx, playerTag)
+	if err != nil {
+		return clandomain.PlayerOverview{}, mapErrorWithNotFound(err, wardomain.ErrorPlayerNotFound)
+	}
+	return toDomainPlayerOverview(player), nil
+}
+
+func (c *Client) BattleLog(ctx context.Context, playerTag string) (clandomain.BattleLogSummary, error) {
+	log, err := c.api.GetBattleLog(ctx, playerTag)
+	if err != nil {
+		return clandomain.BattleLogSummary{}, mapErrorWithNotFound(err, wardomain.ErrorPlayerNotFound)
+	}
+	return toDomainBattleLog(log), nil
 }
 
 // toDomainCurrentWar 把 cocapi.ClanWar 转成 wardomain.CurrentWar。
@@ -146,4 +178,171 @@ func mapError(err error) error {
 		}
 	}
 	return wardomain.WrapError(wardomain.ErrorAPIRequestFailed, "unexpected coc api error", err)
+}
+
+func mapErrorWithNotFound(err error, notFoundCode string) error {
+	mapped := mapError(err)
+	var warErr wardomain.Error
+	if errors.As(mapped, &warErr) && warErr.Code == wardomain.ErrorWarNotFound {
+		return wardomain.WrapError(notFoundCode, err.Error(), err)
+	}
+	return mapped
+}
+
+func toDomainClanOverview(c cocapi.Clan) clandomain.ClanOverview {
+	overview := clandomain.ClanOverview{
+		Tag:            c.Tag,
+		Name:           c.Name,
+		ClanLevel:      c.ClanLevel,
+		Description:    c.Description,
+		Members:        c.Members,
+		ClanPoints:     c.ClanPoints,
+		WarWins:        c.WarWins,
+		WarLosses:      c.WarLosses,
+		WarTies:        c.WarTies,
+		WarWinStreak:   c.WarWinStreak,
+		WarFrequency:   c.WarFrequency,
+		Type:           c.Type,
+		IsWarLogPublic: c.IsWarLogPublic,
+		BadgeURLs:      c.BadgeURLs,
+		Labels:         toDomainLabels(c.Labels),
+	}
+	if c.Location.ID != 0 {
+		loc := toDomainLocation(c.Location)
+		overview.Location = &loc
+	}
+	if c.WarLeague.ID != 0 {
+		league := toDomainLeagueRef(cocapi.League{ID: c.WarLeague.ID, Name: c.WarLeague.Name})
+		overview.WarLeague = &league
+	}
+	return overview
+}
+
+func toDomainClanMembers(members []cocapi.ClanMember) []clandomain.ClanMemberSummary {
+	result := make([]clandomain.ClanMemberSummary, 0, len(members))
+	for _, m := range members {
+		summary := clandomain.ClanMemberSummary{
+			Tag:               m.Tag,
+			Name:              m.Name,
+			TownHallLevel:     m.TownHallLevel,
+			ExpLevel:          m.ExpLevel,
+			Role:              m.Role,
+			Trophies:          m.Trophies,
+			ClanRank:          m.ClanRank,
+			Donations:         m.Donations,
+			DonationsReceived: m.DonationsReceived,
+		}
+		if m.League.ID != 0 {
+			league := toDomainLeagueRef(cocapi.League(m.League))
+			summary.League = &league
+		}
+		result = append(result, summary)
+	}
+	return result
+}
+
+func toDomainPlayerOverview(p cocapi.Player) clandomain.PlayerOverview {
+	overview := clandomain.PlayerOverview{
+		Tag:                 p.Tag,
+		Name:                p.Name,
+		TownHallLevel:       p.TownHallLevel,
+		TownHallWeaponLevel: p.TownHallWeaponLevel,
+		ExpLevel:            p.ExpLevel,
+		Role:                p.Role,
+		WarStars:            p.WarStars,
+		AttackWins:          p.AttackWins,
+		DefenseWins:         p.DefenseWins,
+		Trophies:            p.Trophies,
+		BestTrophies:        p.BestTrophies,
+		WarPreference:       p.WarPreference,
+		Labels:              toDomainLabels(p.Labels),
+		Heroes:              toDomainHeroLevels(p.Heroes),
+		Achievements:        toDomainAchievements(p.Achievements),
+	}
+	if p.Clan.Tag != "" {
+		overview.Clan = &clandomain.PlayerClanInfo{
+			Tag:       p.Clan.Tag,
+			Name:      p.Clan.Name,
+			ClanLevel: p.Clan.ClanLevel,
+			BadgeURLs: p.Clan.BadgeURLs,
+		}
+	}
+	if p.League.ID != 0 {
+		league := toDomainLeagueRef(p.League)
+		overview.League = &league
+	}
+	return overview
+}
+
+func toDomainBattleLog(log cocapi.BattleLogEntryListResponse) clandomain.BattleLogSummary {
+	items := make([]clandomain.BattleLogEntry, 0, len(log.Items))
+	for _, e := range log.Items {
+		items = append(items, clandomain.BattleLogEntry{
+			ArmyShareCode:         e.ArmyShareCode,
+			Attack:                e.Attack,
+			BattleTime:            e.BattleTime,
+			BattleTimestamp:       e.BattleTimestamp,
+			BattleType:            e.BattleType,
+			DestructionPercentage: e.DestructionPercentage,
+			OpponentName:          e.OpponentName,
+			OpponentPlayerTag:     e.OpponentPlayerTag,
+			OpponentTownHallLevel: e.OpponentTownHallLevel,
+			Stars:                 e.Stars,
+		})
+	}
+	return clandomain.BattleLogSummary{Items: items, Paging: clandomain.Paging{}}
+}
+
+func toDomainLabels(labels cocapi.LabelList) []clandomain.Label {
+	result := make([]clandomain.Label, 0, len(labels))
+	for _, l := range labels {
+		result = append(result, clandomain.Label{
+			ID:   l.ID,
+			Name: string(l.Name),
+		})
+	}
+	return result
+}
+
+func toDomainLocation(loc cocapi.Location) clandomain.Location {
+	return clandomain.Location{
+		ID:          loc.ID,
+		Name:        string(loc.Name),
+		CountryCode: loc.CountryCode,
+	}
+}
+
+func toDomainLeagueRef(league cocapi.League) clandomain.LeagueRef {
+	return clandomain.LeagueRef{
+		ID:   league.ID,
+		Name: string(league.Name),
+	}
+}
+
+func toDomainHeroLevels(heroes cocapi.PlayerItemLevelList) []clandomain.HeroLevel {
+	result := make([]clandomain.HeroLevel, 0, len(heroes))
+	for _, h := range heroes {
+		result = append(result, clandomain.HeroLevel{
+			Name:     string(h.Name),
+			Level:    h.Level,
+			MaxLevel: h.MaxLevel,
+			Village:  h.Village,
+		})
+	}
+	return result
+}
+
+func toDomainAchievements(achievements cocapi.PlayerAchievementProgressList) []clandomain.AchievementProgress {
+	result := make([]clandomain.AchievementProgress, 0, len(achievements))
+	for _, a := range achievements {
+		result = append(result, clandomain.AchievementProgress{
+			Name:    string(a.Name),
+			Stars:   a.Stars,
+			Target:  a.Target,
+			Value:   a.Value,
+			Village: a.Village,
+			Info:    string(a.Info),
+		})
+	}
+	return result
 }

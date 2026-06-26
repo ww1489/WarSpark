@@ -199,3 +199,124 @@ func TestCurrentWarMapsAccessDenied(t *testing.T) {
 		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorAPIAccessDenied)
 	}
 }
+
+func TestClanConvertsCocapiToDomain(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.EscapedPath() {
+		case "/clans/%23AAA":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"tag": "#AAA", "name": "My Clan", "clanLevel": 15,
+				"members": 40, "warWins": 100, "warLosses": 20, "warTies": 5,
+				"warWinStreak": 3, "type": "open", "isWarLogPublic": true,
+				"description": "A clan",
+			})
+		case "/clans/%23AAA/members":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"items": []map[string]any{
+					{"tag": "#P1", "name": "Player1", "townHallLevel": 14, "role": "leader", "trophies": 5000, "clanRank": 1, "expLevel": 200, "donations": 1000, "donationsReceived": 500},
+				},
+				"paging": map[string]any{},
+			})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	detail, err := client.Clan(context.Background(), "#AAA")
+	if err != nil {
+		t.Fatalf("Clan error: %v", err)
+	}
+	if detail.Clan.Name != "My Clan" || detail.Clan.WarWins != 100 {
+		t.Fatalf("clan: %+v", detail.Clan)
+	}
+	if len(detail.Members) != 1 || detail.Members[0].Name != "Player1" {
+		t.Fatalf("members: %+v", detail.Members)
+	}
+	if detail.Members[0].TownHallLevel != 14 || detail.Members[0].Role != "leader" {
+		t.Fatalf("member detail: %+v", detail.Members[0])
+	}
+}
+
+func TestPlayerConvertsCocapiToDomain(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"tag": "#P1", "name": "Player1", "townHallLevel": 14, "townHallWeaponLevel": 5,
+			"expLevel": 200, "role": "leader", "warStars": 800, "attackWins": 300,
+			"defenseWins": 50, "trophies": 5000, "bestTrophies": 5500,
+			"clan":   map[string]any{"tag": "#AAA", "name": "My Clan", "clanLevel": 15},
+			"heroes": []map[string]any{{"name": "Barbarian King", "level": 80, "maxLevel": 90, "village": "home"}},
+		})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	player, err := client.Player(context.Background(), "#P1")
+	if err != nil {
+		t.Fatalf("Player error: %v", err)
+	}
+	if player.Name != "Player1" || player.TownHallLevel != 14 {
+		t.Fatalf("player: %+v", player)
+	}
+	if player.Clan == nil || player.Clan.Name != "My Clan" {
+		t.Fatalf("clan: %+v", player.Clan)
+	}
+	if len(player.Heroes) != 1 || player.Heroes[0].Level != 80 {
+		t.Fatalf("heroes: %+v", player.Heroes)
+	}
+}
+
+func TestBattleLogConvertsItems(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"items": []map[string]any{
+				{"stars": 3, "destructionPercentage": 100, "opponentName": "Enemy", "battleType": "clanWar", "attack": true},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	log, err := client.BattleLog(context.Background(), "#P1")
+	if err != nil {
+		t.Fatalf("BattleLog error: %v", err)
+	}
+	if len(log.Items) != 1 || log.Items[0].Stars != 3 || log.Items[0].OpponentName != "Enemy" {
+		t.Fatalf("items: %+v", log.Items)
+	}
+}
+
+func TestClanNotFoundMapsToClanNotFoundCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]any{"reason": "notFound", "message": "clan not found"})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	_, err := client.Clan(context.Background(), "#AAA")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if wardomain.ErrorCode(err) != wardomain.ErrorClanNotFound {
+		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorClanNotFound)
+	}
+}
+
+func TestPlayerNotFoundMapsToPlayerNotFoundCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]any{"reason": "notFound", "message": "player not found"})
+	}))
+	defer server.Close()
+
+	client := New(cocapi.Config{BaseURL: server.URL, APIToken: "secret", Timeout: time.Second})
+	_, err := client.Player(context.Background(), "#P1")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if wardomain.ErrorCode(err) != wardomain.ErrorPlayerNotFound {
+		t.Fatalf("code = %q, want %q", wardomain.ErrorCode(err), wardomain.ErrorPlayerNotFound)
+	}
+}
