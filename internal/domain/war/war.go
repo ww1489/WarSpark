@@ -15,6 +15,8 @@ const (
 	ErrorSnapshotNotFound   = "snapshot_not_found"
 	ErrorClanNotFound       = "clan_not_found"
 	ErrorPlayerNotFound     = "player_not_found"
+	ErrorLeagueNotFound     = "league_not_found"
+	ErrorLocationNotFound   = "location_not_found"
 )
 
 var ErrSnapshotNotFound = errors.New("war snapshot not found")
