@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
@@ -20,6 +21,8 @@ type cocapiUtilityClient interface {
 	SearchClans(ctx context.Context, query cocapi.QuerySearchClans) (cocapi.ClanListResponse, error)
 	GetLocation(ctx context.Context, locationId string) (cocapi.Location, error)
 	VerifyToken(ctx context.Context, playerTag string, body cocapi.VerifyTokenRequest) (cocapi.VerifyTokenResponse, error)
+	GetPlayer(ctx context.Context, playerTag string) (cocapi.Player, error)
+	GetLeagueGroup(ctx context.Context, leagueGroupTag string, leagueSeasonId string, query cocapi.QueryGetLeagueGroup) (cocapi.LeagueGroup, error)
 }
 
 type UtilityService struct {
@@ -90,8 +93,62 @@ func (s *UtilityService) VerifyPlayerToken(ctx context.Context, playerTag, token
 	return resp, nil
 }
 
-func (s *UtilityService) GetPlayerLeagueGroup(ctx context.Context) (utility.PlayerLeagueGroup, error) {
-	return utility.PlayerLeagueGroup{}, wardomain.NewError("not_implemented", "league group not available, requires CWL round data")
+func (s *UtilityService) GetPlayerLeagueGroup(ctx context.Context, playerTag string) (utility.PlayerLeagueGroup, error) {
+	if playerTag == "" {
+		return utility.PlayerLeagueGroup{}, wardomain.NewError(wardomain.ErrorInvalidTag, "player tag is required")
+	}
+	player, err := s.api.GetPlayer(ctx, playerTag)
+	if err != nil {
+		return utility.PlayerLeagueGroup{}, mapCocapiUtilityError(err, wardomain.ErrorPlayerNotFound)
+	}
+	if player.CurrentLeagueGroupTag == "" {
+		return utility.PlayerLeagueGroup{}, nil
+	}
+	lg, err := s.api.GetLeagueGroup(ctx, player.CurrentLeagueGroupTag, strconv.FormatInt(int64(player.CurrentLeagueSeasonID), 10), cocapi.QueryGetLeagueGroup{})
+	if err != nil {
+		return utility.PlayerLeagueGroup{}, mapCocapiUtilityError(err, "")
+	}
+	return toDomainLeagueGroup(lg), nil
+}
+
+func toDomainLeagueGroup(lg cocapi.LeagueGroup) utility.PlayerLeagueGroup {
+	result := utility.PlayerLeagueGroup{
+		Members: make([]utility.LeagueGroupMember, 0, len(lg.Members)),
+	}
+	for _, m := range lg.Members {
+		result.Members = append(result.Members, utility.LeagueGroupMember{
+			AttackLoseCount:  m.AttackLoseCount,
+			AttackWinCount:   m.AttackWinCount,
+			DefenseLoseCount: m.DefenseLoseCount,
+			DefenseWinCount:  m.DefenseWinCount,
+			LeagueTrophies:   m.LeagueTrophies,
+			ClanName:         m.ClanName,
+			ClanTag:          m.ClanTag,
+			PlayerName:       m.PlayerName,
+			PlayerTag:        m.PlayerTag,
+		})
+	}
+	for _, e := range lg.AttackLogs {
+		result.AttackLogs = append(result.AttackLogs, utility.LeagueBattleLogEntry{
+			CreationTime:          e.CreationTime,
+			DestructionPercentage: e.DestructionPercentage,
+			OpponentName:          e.OpponentName,
+			OpponentPlayerTag:     e.OpponentPlayerTag,
+			Stars:                 e.Stars,
+			Trophies:              e.Trophies,
+		})
+	}
+	for _, e := range lg.DefenseLogs {
+		result.DefenseLogs = append(result.DefenseLogs, utility.LeagueBattleLogEntry{
+			CreationTime:          e.CreationTime,
+			DestructionPercentage: e.DestructionPercentage,
+			OpponentName:          e.OpponentName,
+			OpponentPlayerTag:     e.OpponentPlayerTag,
+			Stars:                 e.Stars,
+			Trophies:              e.Trophies,
+		})
+	}
+	return result
 }
 
 func mapCocapiUtilityError(err error, notFoundCode string) error {

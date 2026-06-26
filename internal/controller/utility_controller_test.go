@@ -41,7 +41,7 @@ func (f *fakeUtilityService) VerifyPlayerToken(ctx context.Context, playerTag, t
 	return f.verifyResp, f.err
 }
 
-func (f *fakeUtilityService) GetPlayerLeagueGroup(ctx context.Context) (utility.PlayerLeagueGroup, error) {
+func (f *fakeUtilityService) GetPlayerLeagueGroup(ctx context.Context, playerTag string) (utility.PlayerLeagueGroup, error) {
 	return f.leagueGrp, f.err
 }
 
@@ -126,17 +126,33 @@ func TestUtilityVerifyPlayerTokenValidationError(t *testing.T) {
 	}
 }
 
-func TestUtilityGetPlayerLeagueGroupStub(t *testing.T) {
+func TestUtilityGetPlayerLeagueGroup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	svc := &fakeUtilityService{err: wardomain.NewError("not_implemented", "league group not available, requires CWL round data")}
+	svc := &fakeUtilityService{leagueGrp: utility.PlayerLeagueGroup{
+		Members: []utility.LeagueGroupMember{{PlayerName: "P1"}},
+	}}
 	ctrl := NewUtilityController(svc)
 	router := gin.New()
-	router.GET("/players/leaguegroup", ctrl.GetPlayerLeagueGroup)
+	router.GET("/players/:tag/league-group", ctrl.GetPlayerLeagueGroup)
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/players/leaguegroup", nil)
+	req := httptest.NewRequest(http.MethodGet, "/players/%23ABC/league-group", nil)
 	router.ServeHTTP(rec, req)
-	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("status = %d, want 400", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+}
+
+func TestUtilityGetPlayerLeagueGroupError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	svc := &fakeUtilityService{err: wardomain.NewError(wardomain.ErrorPlayerNotFound, "not found")}
+	ctrl := NewUtilityController(svc)
+	router := gin.New()
+	router.GET("/players/:tag/league-group", ctrl.GetPlayerLeagueGroup)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/players/%23ABC/league-group", nil)
+	router.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadGateway {
+		t.Fatalf("status = %d, want 502", rec.Code)
 	}
 }
 

@@ -18,7 +18,7 @@ type UtilityReader interface {
 	SearchClans(ctx context.Context, params utility.ClanSearchParams) (cocapi.ClanListResponse, error)
 	GetLocation(ctx context.Context, locationID string) (cocapi.Location, error)
 	VerifyPlayerToken(ctx context.Context, playerTag, token string) (cocapi.VerifyTokenResponse, error)
-	GetPlayerLeagueGroup(ctx context.Context) (utility.PlayerLeagueGroup, error)
+	GetPlayerLeagueGroup(ctx context.Context, playerTag string) (utility.PlayerLeagueGroup, error)
 }
 
 type UtilityController struct {
@@ -135,12 +135,13 @@ func (ctl *UtilityController) VerifyPlayerToken(c *gin.Context) {
 // @Failure 400 {object} utils.Response
 // @Router /api/v1/players/{tag}/league-group [get]
 func (ctl *UtilityController) GetPlayerLeagueGroup(c *gin.Context) {
-	_, err := ctl.service.GetPlayerLeagueGroup(c.Request.Context())
+	playerTag := c.Param("tag")
+	resp, err := ctl.service.GetPlayerLeagueGroup(c.Request.Context(), playerTag)
 	if err != nil {
 		failUtility(c, err)
 		return
 	}
-	utils.OK(c, nil)
+	utils.OK(c, resp)
 }
 
 func failUtility(ctx *gin.Context, err error) {
@@ -151,8 +152,6 @@ func failUtility(ctx *gin.Context, err error) {
 			utils.JSON(ctx, http.StatusServiceUnavailable, int(utils.ErrInternal), warErr.Code, nil)
 		case wardomain.ErrorAPIAccessDenied:
 			utils.JSON(ctx, http.StatusForbidden, int(utils.ErrForbidden), warErr.Code, nil)
-		case "not_implemented":
-			utils.JSON(ctx, http.StatusBadRequest, int(utils.ErrInvalidField), warErr.Code, nil)
 		default:
 			utils.JSON(ctx, http.StatusBadGateway, int(utils.ErrInternal), warErr.Code, nil)
 		}

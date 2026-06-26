@@ -152,11 +152,70 @@ func TestVerifyPlayerTokenError(t *testing.T) {
 	}
 }
 
-func TestGetPlayerLeagueGroupStub(t *testing.T) {
-	api := fakeUtilityAPI()
-	svc := NewUtilityService(api, &fakeUtilityCache{})
+func TestGetPlayerLeagueGroupNoActiveLeague(t *testing.T) {
+	fakeAPI := &fakeCocapiClient{
+		player: cocapi.Player{Tag: "#ABC", Name: "TestPlayer"},
+	}
+	svc := NewUtilityService(fakeAPI, &fakeUtilityCache{})
 
-	_, err := svc.GetPlayerLeagueGroup(context.Background())
+	resp, err := svc.GetPlayerLeagueGroup(context.Background(), "#ABC")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(resp.Members) != 0 || len(resp.AttackLogs) != 0 || len(resp.DefenseLogs) != 0 {
+		t.Fatalf("expected empty league group for player not in CWL, got %+v", resp)
+	}
+}
+
+func TestGetPlayerLeagueGroupWithData(t *testing.T) {
+	fakeAPI := &fakeCocapiClient{
+		player: cocapi.Player{
+			Tag:                   "#ABC",
+			CurrentLeagueGroupTag: "#GROUP1",
+			CurrentLeagueSeasonID: 202607,
+		},
+		leagueGroup: cocapi.LeagueGroup{
+			Members: []cocapi.LeagueGroupMember{
+				{PlayerName: "Player1", ClanTag: "#CLAN1", LeagueTrophies: 100},
+			},
+			AttackLogs: []cocapi.LeagueBattleLogEntry{
+				{Stars: 2, Trophies: 10, OpponentName: "Enemy"},
+			},
+		},
+	}
+	svc := NewUtilityService(fakeAPI, &fakeUtilityCache{})
+
+	resp, err := svc.GetPlayerLeagueGroup(context.Background(), "#ABC")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(resp.Members) != 1 || resp.Members[0].PlayerName != "Player1" {
+		t.Fatalf("expected 1 member, got %+v", resp.Members)
+	}
+	if len(resp.AttackLogs) != 1 || resp.AttackLogs[0].Stars != 2 {
+		t.Fatalf("expected 1 attack log, got %+v", resp.AttackLogs)
+	}
+}
+
+func TestGetPlayerLeagueGroupInvalidTag(t *testing.T) {
+	svc := NewUtilityService(&fakeCocapiClient{}, &fakeUtilityCache{})
+	_, err := svc.GetPlayerLeagueGroup(context.Background(), "")
+	if err == nil {
+		t.Fatal("expected error for empty tag")
+	}
+	var warErr wardomain.Error
+	if !errors.As(err, &warErr) {
+		t.Fatalf("expected wardomain.Error, got %T", err)
+	}
+	if warErr.Code != wardomain.ErrorInvalidTag {
+		t.Fatalf("expected invalid_tag, got %s", warErr.Code)
+	}
+}
+
+func TestGetPlayerLeagueGroupPlayerNotFound(t *testing.T) {
+	fakeAPI := &fakeCocapiClient{err: cocapi.ErrNotFound}
+	svc := NewUtilityService(fakeAPI, &fakeUtilityCache{})
+	_, err := svc.GetPlayerLeagueGroup(context.Background(), "#INVALID")
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -164,8 +223,8 @@ func TestGetPlayerLeagueGroupStub(t *testing.T) {
 	if !errors.As(err, &warErr) {
 		t.Fatalf("expected wardomain.Error, got %T", err)
 	}
-	if warErr.Code != "not_implemented" {
-		t.Fatalf("expected code not_implemented, got %s", warErr.Code)
+	if warErr.Code != wardomain.ErrorPlayerNotFound {
+		t.Fatalf("expected player_not_found, got %s", warErr.Code)
 	}
 }
 

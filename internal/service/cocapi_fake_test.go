@@ -29,6 +29,8 @@ type fakeCocapiClient struct {
 	capitalLeagues     cocapi.CapitalLeagueListResponse
 	capitalLeague      cocapi.CapitalLeague
 	capitalRaidSeasons cocapi.ClanCapitalRaidSeasonsResponse
+	player             cocapi.Player
+	leagueGroup        cocapi.LeagueGroup
 	err                error
 }
 
@@ -129,5 +131,9 @@ func (f *fakeCocapiClient) VerifyToken(ctx context.Context, playerTag string, bo
 }
 
 func (f *fakeCocapiClient) GetLeagueGroup(ctx context.Context, leagueGroupTag string, leagueSeasonId string, query cocapi.QueryGetLeagueGroup) (cocapi.LeagueGroup, error) {
-	return cocapi.LeagueGroup{}, f.err
+	return f.leagueGroup, f.err
+}
+
+func (f *fakeCocapiClient) GetPlayer(ctx context.Context, playerTag string) (cocapi.Player, error) {
+	return f.player, f.err
 }
