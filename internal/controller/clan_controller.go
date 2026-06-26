@@ -23,6 +23,17 @@ func NewClanController(service ClanReader) *ClanController {
 	return &ClanController{service: service}
 }
 
+// GetClan 获取部落详细信息。
+//
+// @Summary 获取部落信息
+// @Tags clan
+// @Produce json
+// @Param tag path string true "部落标签"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 422 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/clans/{tag} [get]
 func (c *ClanController) GetClan(ctx *gin.Context) {
 	clanTag := ctx.Param("tag")
 	if clanTag == "" {

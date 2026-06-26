@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
-	"time"
 
 	cocapi "github.com/ww1489/WarSpark/pkg/cocapi"
 
@@ -14,15 +13,15 @@ import (
 
 type capitalCache interface {
 	GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, bool, error)
-	SetCapitalRaidSeasons(ctx context.Context, clanTag string, resp capital.CapitalRaidSeasonListResponse, ttl time.Duration) error
+	SetCapitalRaidSeasons(ctx context.Context, clanTag string, resp capital.CapitalRaidSeasonListResponse) error
 	GetCapitalLeagues(ctx context.Context) (capital.CapitalLeagueListResponse, bool, error)
-	SetCapitalLeagues(ctx context.Context, resp capital.CapitalLeagueListResponse, ttl time.Duration) error
+	SetCapitalLeagues(ctx context.Context, resp capital.CapitalLeagueListResponse) error
 	GetCapitalLeague(ctx context.Context, leagueID string) (capital.CapitalLeague, bool, error)
-	SetCapitalLeague(ctx context.Context, leagueID string, resp capital.CapitalLeague, ttl time.Duration) error
+	SetCapitalLeague(ctx context.Context, leagueID string, resp capital.CapitalLeague) error
 	GetBuilderBaseLeagues(ctx context.Context) (capital.BuilderBaseLeagueListResponse, bool, error)
-	SetBuilderBaseLeagues(ctx context.Context, resp capital.BuilderBaseLeagueListResponse, ttl time.Duration) error
+	SetBuilderBaseLeagues(ctx context.Context, resp capital.BuilderBaseLeagueListResponse) error
 	GetBuilderBaseLeague(ctx context.Context, leagueID string) (capital.BuilderBaseLeague, bool, error)
-	SetBuilderBaseLeague(ctx context.Context, leagueID string, resp capital.BuilderBaseLeague, ttl time.Duration) error
+	SetBuilderBaseLeague(ctx context.Context, leagueID string, resp capital.BuilderBaseLeague) error
 }
 
 type cocapiCapitalClient interface {
@@ -34,20 +33,12 @@ type cocapiCapitalClient interface {
 }
 
 type CapitalService struct {
-	cocapi        cocapiCapitalClient
-	cache         capitalCache
-	raidSeasonTTL time.Duration
-	leagueTTL     time.Duration
+	cocapi cocapiCapitalClient
+	cache  capitalCache
 }
 
-func NewCapitalService(cocapi cocapiCapitalClient, cache capitalCache, raidSeasonTTL, leagueTTL time.Duration) *CapitalService {
-	if raidSeasonTTL <= 0 {
-		raidSeasonTTL = 5 * time.Minute
-	}
-	if leagueTTL <= 0 {
-		leagueTTL = 30 * time.Minute
-	}
-	return &CapitalService{cocapi: cocapi, cache: cache, raidSeasonTTL: raidSeasonTTL, leagueTTL: leagueTTL}
+func NewCapitalService(cocapi cocapiCapitalClient, cache capitalCache) *CapitalService {
+	return &CapitalService{cocapi: cocapi, cache: cache}
 }
 
 func (s *CapitalService) GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, error) {
@@ -73,7 +64,7 @@ func (s *CapitalService) GetCapitalRaidSeasons(ctx context.Context, clanTag stri
 		resp.Items = append(resp.Items, d)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetCapitalRaidSeasons(ctx, clanTag, resp, s.raidSeasonTTL)
+		_ = s.cache.SetCapitalRaidSeasons(ctx, clanTag, resp)
 	}
 	return resp, nil
 }
@@ -94,7 +85,7 @@ func (s *CapitalService) GetCapitalLeagues(ctx context.Context) (capital.Capital
 		resp.Items = append(resp.Items, toDomainCapitalLeague(item))
 	}
 	if s.cache != nil {
-		_ = s.cache.SetCapitalLeagues(ctx, resp, s.leagueTTL)
+		_ = s.cache.SetCapitalLeagues(ctx, resp)
 	}
 	return resp, nil
 }
@@ -115,7 +106,7 @@ func (s *CapitalService) GetCapitalLeague(ctx context.Context, leagueID string) 
 	}
 	resp := toDomainCapitalLeague(cocapiResp)
 	if s.cache != nil {
-		_ = s.cache.SetCapitalLeague(ctx, leagueID, resp, s.leagueTTL)
+		_ = s.cache.SetCapitalLeague(ctx, leagueID, resp)
 	}
 	return resp, nil
 }
@@ -136,7 +127,7 @@ func (s *CapitalService) GetBuilderBaseLeagues(ctx context.Context) (capital.Bui
 		resp.Items = append(resp.Items, toDomainBuilderBaseLeague(item))
 	}
 	if s.cache != nil {
-		_ = s.cache.SetBuilderBaseLeagues(ctx, resp, s.leagueTTL)
+		_ = s.cache.SetBuilderBaseLeagues(ctx, resp)
 	}
 	return resp, nil
 }
@@ -157,7 +148,7 @@ func (s *CapitalService) GetBuilderBaseLeague(ctx context.Context, leagueID stri
 	}
 	resp := toDomainBuilderBaseLeague(cocapiResp)
 	if s.cache != nil {
-		_ = s.cache.SetBuilderBaseLeague(ctx, leagueID, resp, s.leagueTTL)
+		_ = s.cache.SetBuilderBaseLeague(ctx, leagueID, resp)
 	}
 	return resp, nil
 }

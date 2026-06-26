@@ -7,21 +7,21 @@ import (
 )
 
 type fakeCocapiClient struct {
-	locations      cocapi.LocationListResponse
-	clanRanking    cocapi.ClanRankingListResponse
-	playerRanking  cocapi.PlayerRankingListResponse
-	capitalRanking cocapi.ClanCapitalRankingListResponse
-	builderClan    cocapi.ClanBuilderBaseRankingListResponse
-	builderPlayer  cocapi.PlayerBuilderBaseRankingListResponse
-	leagues        cocapi.LeagueListResponse
-	league         cocapi.League
-	leagueSeasons  cocapi.LeagueSeasonListResponse
-	leagueRankings cocapi.PlayerRankingListResponse
-	leagueTiers    cocapi.LeagueTierListResponse
-	leagueTier     cocapi.LeagueTier
-	leagueHistory  cocapi.LeagueSeasonResultListResponse
-	warLeagues     cocapi.WarLeagueListResponse
-	warLeague      cocapi.WarLeague
+	locations          cocapi.LocationListResponse
+	clanRanking        cocapi.ClanRankingListResponse
+	playerRanking      cocapi.PlayerRankingListResponse
+	capitalRanking     cocapi.ClanCapitalRankingListResponse
+	builderClan        cocapi.ClanBuilderBaseRankingListResponse
+	builderPlayer      cocapi.PlayerBuilderBaseRankingListResponse
+	leagues            cocapi.LeagueListResponse
+	league             cocapi.League
+	leagueSeasons      cocapi.LeagueSeasonListResponse
+	leagueRankings     cocapi.PlayerRankingListResponse
+	leagueTiers        cocapi.LeagueTierListResponse
+	leagueTier         cocapi.LeagueTier
+	leagueHistory      cocapi.LeagueSeasonResultListResponse
+	warLeagues         cocapi.WarLeagueListResponse
+	warLeague          cocapi.WarLeague
 	clanLabels         cocapi.LabelListResponse
 	playerLabels       cocapi.LabelListResponse
 	builderBaseLeagues cocapi.BuilderBaseLeagueListResponse
@@ -101,7 +101,7 @@ func (f *fakeCocapiClient) GetCapitalLeague(ctx context.Context, leagueId string
 }
 
 func (f *fakeCocapiClient) SearchClans(ctx context.Context, query cocapi.QuerySearchClans) (cocapi.ClanListResponse, error) {
-	return cocapi.ClanListResponse{}, nil
+	return cocapi.ClanListResponse{}, f.err
 }
 
 func (f *fakeCocapiClient) GetCapitalRaidSeasons(ctx context.Context, clanTag string, query cocapi.QueryGetCapitalRaidSeasons) (cocapi.ClanCapitalRaidSeasonsResponse, error) {
@@ -117,17 +117,17 @@ func (f *fakeCocapiClient) GetClanWarLeagueWar(ctx context.Context, warTag strin
 }
 
 func (f *fakeCocapiClient) GetCurrentGoldPassSeason(ctx context.Context) (cocapi.GoldPassSeason, error) {
-	return cocapi.GoldPassSeason{}, nil
+	return cocapi.GoldPassSeason{}, f.err
 }
 
 func (f *fakeCocapiClient) GetLocation(ctx context.Context, locationId string) (cocapi.Location, error) {
-	return cocapi.Location{}, nil
+	return cocapi.Location{}, f.err
 }
 
 func (f *fakeCocapiClient) VerifyToken(ctx context.Context, playerTag string, body cocapi.VerifyTokenRequest) (cocapi.VerifyTokenResponse, error) {
-	return cocapi.VerifyTokenResponse{}, nil
+	return cocapi.VerifyTokenResponse{}, f.err
 }
 
 func (f *fakeCocapiClient) GetLeagueGroup(ctx context.Context, leagueGroupTag string, leagueSeasonId string, query cocapi.QueryGetLeagueGroup) (cocapi.LeagueGroup, error) {
-	return cocapi.LeagueGroup{}, nil
+	return cocapi.LeagueGroup{}, f.err
 }

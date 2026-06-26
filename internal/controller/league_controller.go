@@ -32,6 +32,14 @@ func NewLeagueController(service LeagueReader) *LeagueController {
 	return &LeagueController{service: service}
 }
 
+// GetLeagues 获取联赛列表。
+//
+// @Summary 获取联赛列表
+// @Tags league
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues [get]
 func (c *LeagueController) GetLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetLeagues(ctx.Request.Context())
 	if err != nil {
@@ -41,6 +49,16 @@ func (c *LeagueController) GetLeagues(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetLeague 获取联赛详情。
+//
+// @Summary 获取联赛详情
+// @Tags league
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id} [get]
 func (c *LeagueController) GetLeague(ctx *gin.Context) {
 	id := ctx.Param("id")
 	l, err := c.service.GetLeague(ctx.Request.Context(), id)
@@ -51,6 +69,16 @@ func (c *LeagueController) GetLeague(ctx *gin.Context) {
 	utils.OK(ctx, l)
 }
 
+// GetLeagueSeasons 获取联赛赛季列表。
+//
+// @Summary 获取联赛赛季列表
+// @Tags league
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id}/seasons [get]
 func (c *LeagueController) GetLeagueSeasons(ctx *gin.Context) {
 	id := ctx.Param("id")
 	resp, err := c.service.GetLeagueSeasons(ctx.Request.Context(), id)
@@ -61,6 +89,17 @@ func (c *LeagueController) GetLeagueSeasons(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetLeagueSeasonRankings 获取联赛赛季排名。
+//
+// @Summary 获取联赛赛季排名
+// @Tags league
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Param season path string true "赛季ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id}/seasons/{season}/rankings [get]
 func (c *LeagueController) GetLeagueSeasonRankings(ctx *gin.Context) {
 	id := ctx.Param("id")
 	season := ctx.Param("season")
@@ -72,6 +111,17 @@ func (c *LeagueController) GetLeagueSeasonRankings(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetLeagueTiers 获取联赛赛季段位列表。
+//
+// @Summary 获取联赛赛季段位列表
+// @Tags league
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Param season path string true "赛季ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id}/seasons/{season}/tiers [get]
 func (c *LeagueController) GetLeagueTiers(ctx *gin.Context) {
 	id := ctx.Param("id")
 	season := ctx.Param("season")
@@ -83,6 +133,16 @@ func (c *LeagueController) GetLeagueTiers(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetLeagueTier 获取联赛赛季段位详情。
+//
+// @Summary 获取联赛赛季段位详情
+// @Tags league
+// @Produce json
+// @Param tier path string true "段位ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id}/seasons/{season}/tiers/{tier} [get]
 func (c *LeagueController) GetLeagueTier(ctx *gin.Context) {
 	tierID := ctx.Param("tier")
 	t, err := c.service.GetLeagueTier(ctx.Request.Context(), tierID)
@@ -93,6 +153,16 @@ func (c *LeagueController) GetLeagueTier(ctx *gin.Context) {
 	utils.OK(ctx, t)
 }
 
+// GetLeagueHistory 获取玩家联赛赛季历史。
+//
+// @Summary 获取玩家联赛赛季历史
+// @Tags league
+// @Produce json
+// @Param player_tag query string true "玩家标签"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/leagues/{id}/seasons/{season}/tiers/{tier}/history [get]
 func (c *LeagueController) GetLeagueHistory(ctx *gin.Context) {
 	playerTag := ctx.Query("player_tag")
 	if playerTag == "" {
@@ -107,6 +177,14 @@ func (c *LeagueController) GetLeagueHistory(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetWarLeagues 获取战争联赛列表。
+//
+// @Summary 获取战争联赛列表
+// @Tags league
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/war-leagues [get]
 func (c *LeagueController) GetWarLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetWarLeagues(ctx.Request.Context())
 	if err != nil {
@@ -116,6 +194,16 @@ func (c *LeagueController) GetWarLeagues(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetWarLeague 获取战争联赛详情。
+//
+// @Summary 获取战争联赛详情
+// @Tags league
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/war-leagues/{id} [get]
 func (c *LeagueController) GetWarLeague(ctx *gin.Context) {
 	id := ctx.Param("id")
 	l, err := c.service.GetWarLeague(ctx.Request.Context(), id)

@@ -28,30 +28,26 @@ type WarRepository interface {
 
 type WarCache interface {
 	GetCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, bool, error)
-	SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot, ttl time.Duration) error
+	SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot) error
 	GetCWLGroup(ctx context.Context, clanTag string) (wardomain.CWLGroup, bool, error)
-	SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error
+	SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup) error
 	GetWarLog(ctx context.Context, clanTag string) (cocapi.ClanWarLogResponse, bool, error)
-	SetWarLog(ctx context.Context, clanTag string, resp cocapi.ClanWarLogResponse, ttl time.Duration) error
+	SetWarLog(ctx context.Context, clanTag string, resp cocapi.ClanWarLogResponse) error
 	GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanWar, bool, error)
-	SetCWLWar(ctx context.Context, warTag string, resp cocapi.ClanWar, ttl time.Duration) error
+	SetCWLWar(ctx context.Context, warTag string, resp cocapi.ClanWar) error
 }
 
 type WarServiceOptions struct {
-	Cache              WarCache
-	CurrentWarCacheTTL time.Duration
-	CWLGroupCacheTTL   time.Duration
-	CocapiClient       *cocapi.Client
+	Cache        WarCache
+	CocapiClient *cocapi.Client
 }
 
 type WarService struct {
-	client             WarAPIClient
-	repository         WarRepository
-	cache              WarCache
-	currentWarCacheTTL time.Duration
-	cwlGroupCacheTTL   time.Duration
-	capi               *cocapi.Client
-	now                func() time.Time
+	client     WarAPIClient
+	repository WarRepository
+	cache      WarCache
+	capi       *cocapi.Client
+	now        func() time.Time
 }
 
 func NewWarService(client WarAPIClient, repository WarRepository, options ...WarServiceOptions) *WarService {
@@ -59,20 +55,12 @@ func NewWarService(client WarAPIClient, repository WarRepository, options ...War
 	if len(options) > 0 {
 		option = options[0]
 	}
-	if option.CurrentWarCacheTTL <= 0 {
-		option.CurrentWarCacheTTL = 2 * time.Minute
-	}
-	if option.CWLGroupCacheTTL <= 0 {
-		option.CWLGroupCacheTTL = 5 * time.Minute
-	}
 	return &WarService{
-		client:             client,
-		repository:         repository,
-		cache:              option.Cache,
-		currentWarCacheTTL: option.CurrentWarCacheTTL,
-		cwlGroupCacheTTL:   option.CWLGroupCacheTTL,
-		capi:               option.CocapiClient,
-		now:                time.Now,
+		client:     client,
+		repository: repository,
+		cache:      option.Cache,
+		capi:       option.CocapiClient,
+		now:        time.Now,
 	}
 }
 
@@ -100,7 +88,7 @@ func (s *WarService) FetchCurrentWar(ctx context.Context, clanTag string) (wardo
 		return wardomain.Snapshot{}, err
 	}
 	if s.cache != nil {
-		_ = s.cache.SetCurrentWar(ctx, normalizedTag, snapshot, s.currentWarCacheTTL)
+		_ = s.cache.SetCurrentWar(ctx, normalizedTag, snapshot)
 	}
 	return snapshot, nil
 }
@@ -132,7 +120,7 @@ func (s *WarService) FetchCWLGroup(ctx context.Context, clanTag string) (wardoma
 		}
 	}
 	if s.cache != nil {
-		_ = s.cache.SetCWLGroup(ctx, normalizedTag, group, s.cwlGroupCacheTTL)
+		_ = s.cache.SetCWLGroup(ctx, normalizedTag, group)
 	}
 	return group, nil
 }
@@ -161,7 +149,7 @@ func (s *WarService) GetWarLog(ctx context.Context, clanTag string, limit int, a
 		return cocapi.ClanWarLogResponse{}, mapCocapiErrorToWarError(err)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetWarLog(ctx, normalizedTag, resp, s.currentWarCacheTTL)
+		_ = s.cache.SetWarLog(ctx, normalizedTag, resp)
 	}
 	return resp, nil
 }
@@ -182,7 +170,7 @@ func (s *WarService) GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanW
 		return cocapi.ClanWar{}, mapCocapiErrorToWarError(err)
 	}
 	if s.cache != nil {
-		_ = s.cache.SetCWLWar(ctx, normalizedTag, resp, s.cwlGroupCacheTTL)
+		_ = s.cache.SetCWLWar(ctx, normalizedTag, resp)
 	}
 	return resp, nil
 }

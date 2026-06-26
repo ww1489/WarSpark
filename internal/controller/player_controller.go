@@ -24,6 +24,16 @@ func NewPlayerController(service PlayerReader) *PlayerController {
 	return &PlayerController{service: service}
 }
 
+// GetPlayer 获取玩家概览信息。
+//
+// @Summary 获取玩家概览
+// @Tags player
+// @Produce json
+// @Param tag path string true "玩家标签"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 422 {object} utils.Response
+// @Router /api/v1/players/{tag} [get]
 func (c *PlayerController) GetPlayer(ctx *gin.Context) {
 	playerTag := ctx.Param("tag")
 	if playerTag == "" {
@@ -39,6 +49,16 @@ func (c *PlayerController) GetPlayer(ctx *gin.Context) {
 	utils.OK(ctx, player)
 }
 
+// GetBattleLog 获取玩家战斗日志。
+//
+// @Summary 获取玩家战斗日志
+// @Tags player
+// @Produce json
+// @Param tag path string true "玩家标签"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 422 {object} utils.Response
+// @Router /api/v1/players/{tag}/battle-log [get]
 func (c *PlayerController) GetBattleLog(ctx *gin.Context) {
 	playerTag := ctx.Param("tag")
 	if playerTag == "" {

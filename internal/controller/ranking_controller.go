@@ -29,6 +29,14 @@ func NewRankingController(service RankingReader) *RankingController {
 	return &RankingController{service: service}
 }
 
+// GetLocations 获取位置列表。
+//
+// @Summary 获取位置列表
+// @Tags ranking
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations [get]
 func (c *RankingController) GetLocations(ctx *gin.Context) {
 	resp, err := c.service.GetLocations(ctx.Request.Context())
 	if err != nil {
@@ -38,6 +46,16 @@ func (c *RankingController) GetLocations(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetClanRanking 获取指定位置的部落排名。
+//
+// @Summary 获取部落排名
+// @Tags ranking
+// @Produce json
+// @Param id path string true "位置ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations/{id}/rankings/clans [get]
 func (c *RankingController) GetClanRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanRanking(ctx.Request.Context(), locationID)
@@ -48,6 +66,16 @@ func (c *RankingController) GetClanRanking(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetPlayerRanking 获取指定位置的玩家排名。
+//
+// @Summary 获取玩家排名
+// @Tags ranking
+// @Produce json
+// @Param id path string true "位置ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations/{id}/rankings/players [get]
 func (c *RankingController) GetPlayerRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetPlayerRanking(ctx.Request.Context(), locationID)
@@ -58,6 +86,16 @@ func (c *RankingController) GetPlayerRanking(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetClanCapitalRanking 获取指定位置的部落都城排名。
+//
+// @Summary 获取部落都城排名
+// @Tags ranking
+// @Produce json
+// @Param id path string true "位置ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations/{id}/rankings/clans-capital [get]
 func (c *RankingController) GetClanCapitalRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanCapitalRanking(ctx.Request.Context(), locationID)
@@ -68,6 +106,16 @@ func (c *RankingController) GetClanCapitalRanking(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetClanBuilderBaseRanking 获取指定位置的部落夜世界排名。
+//
+// @Summary 获取部落夜世界排名
+// @Tags ranking
+// @Produce json
+// @Param id path string true "位置ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations/{id}/rankings/clans-builder-base [get]
 func (c *RankingController) GetClanBuilderBaseRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetClanBuilderBaseRanking(ctx.Request.Context(), locationID)
@@ -78,6 +126,16 @@ func (c *RankingController) GetClanBuilderBaseRanking(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetPlayerBuilderBaseRanking 获取指定位置的玩家夜世界排名。
+//
+// @Summary 获取玩家夜世界排名
+// @Tags ranking
+// @Produce json
+// @Param id path string true "位置ID"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/locations/{id}/rankings/players-builder-base [get]
 func (c *RankingController) GetPlayerBuilderBaseRanking(ctx *gin.Context) {
 	locationID := ctx.Param("id")
 	resp, err := c.service.GetPlayerBuilderBaseRanking(ctx.Request.Context(), locationID)

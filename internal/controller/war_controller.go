@@ -108,6 +108,19 @@ func (c *WarController) ListMembers(ctx *gin.Context) {
 	utils.OK(ctx, paginated(result.Items, pagination, result.Total))
 }
 
+// GetWarLog 获取部落战争日志。
+//
+// @Summary 获取部落战争日志
+// @Tags war
+// @Produce json
+// @Param tag path string true "部落标签"
+// @Param limit query int false "分页数量"
+// @Param after query string false "游标后"
+// @Param before query string false "游标前"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/clans/{tag}/war-log [get]
 func (ctl *WarController) GetWarLog(c *gin.Context) {
 	tag := c.Param("tag")
 	var query struct {
@@ -126,6 +139,16 @@ func (ctl *WarController) GetWarLog(c *gin.Context) {
 	utils.OK(c, resp)
 }
 
+// GetCWLWar 获取 CWL 联赛单场战争详情。
+//
+// @Summary 获取 CWL 联赛战争
+// @Tags war
+// @Produce json
+// @Param war_tag path string true "战争标签"
+// @Success 200 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/war/cwl/wars/{war_tag} [get]
 func (ctl *WarController) GetCWLWar(c *gin.Context) {
 	warTag := c.Param("war_tag")
 	resp, err := ctl.service.GetCWLWar(c.Request.Context(), warTag)

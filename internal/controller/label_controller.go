@@ -25,6 +25,14 @@ func NewLabelController(service LabelReader) *LabelController {
 	return &LabelController{service: service}
 }
 
+// GetClanLabels 获取部落标签列表。
+//
+// @Summary 获取部落标签
+// @Tags label
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/clans/labels [get]
 func (c *LabelController) GetClanLabels(ctx *gin.Context) {
 	resp, err := c.service.GetClanLabels(ctx.Request.Context())
 	if err != nil {
@@ -34,6 +42,14 @@ func (c *LabelController) GetClanLabels(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetPlayerLabels 获取玩家标签列表。
+//
+// @Summary 获取玩家标签
+// @Tags label
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Router /api/v1/players/labels [get]
 func (c *LabelController) GetPlayerLabels(ctx *gin.Context) {
 	resp, err := c.service.GetPlayerLabels(ctx.Request.Context())
 	if err != nil {

@@ -14,11 +14,21 @@ import (
 )
 
 type WarCache struct {
-	client *goredis.Client
+	client        *goredis.Client
+	currentWarTTL time.Duration
+	cwlGroupTTL   time.Duration
+	warLogTTL     time.Duration
+	cwlWarTTL     time.Duration
 }
 
-func NewWarCache(client *goredis.Client) *WarCache {
-	return &WarCache{client: client}
+func NewWarCache(client *goredis.Client, currentWarTTL, cwlGroupTTL, warLogTTL, cwlWarTTL time.Duration) *WarCache {
+	return &WarCache{
+		client:        client,
+		currentWarTTL: currentWarTTL,
+		cwlGroupTTL:   cwlGroupTTL,
+		warLogTTL:     warLogTTL,
+		cwlWarTTL:     cwlWarTTL,
+	}
 }
 
 func (c *WarCache) GetCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, bool, error) {
@@ -39,7 +49,7 @@ func (c *WarCache) GetCurrentWar(ctx context.Context, clanTag string) (wardomain
 	return snapshot, true, nil
 }
 
-func (c *WarCache) SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot, ttl time.Duration) error {
+func (c *WarCache) SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -47,7 +57,7 @@ func (c *WarCache) SetCurrentWar(ctx context.Context, clanTag string, snapshot w
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, currentWarKey(clanTag), data, ttl).Err()
+	return c.client.Set(ctx, currentWarKey(clanTag), data, c.currentWarTTL).Err()
 }
 
 func currentWarKey(clanTag string) string {
@@ -74,7 +84,7 @@ func (c *WarCache) GetCWLGroup(ctx context.Context, clanTag string) (wardomain.C
 	return group, true, nil
 }
 
-func (c *WarCache) SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error {
+func (c *WarCache) SetCWLGroup(ctx context.Context, clanTag string, group wardomain.CWLGroup) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -82,7 +92,7 @@ func (c *WarCache) SetCWLGroup(ctx context.Context, clanTag string, group wardom
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, cwlGroupKey(clanTag), data, ttl).Err()
+	return c.client.Set(ctx, cwlGroupKey(clanTag), data, c.cwlGroupTTL).Err()
 }
 
 func cwlGroupKey(clanTag string) string {
@@ -109,7 +119,7 @@ func (c *WarCache) GetWarLog(ctx context.Context, clanTag string) (cocapi.ClanWa
 	return resp, true, nil
 }
 
-func (c *WarCache) SetWarLog(ctx context.Context, clanTag string, resp cocapi.ClanWarLogResponse, ttl time.Duration) error {
+func (c *WarCache) SetWarLog(ctx context.Context, clanTag string, resp cocapi.ClanWarLogResponse) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -117,7 +127,7 @@ func (c *WarCache) SetWarLog(ctx context.Context, clanTag string, resp cocapi.Cl
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, warLogKey(clanTag), data, ttl).Err()
+	return c.client.Set(ctx, warLogKey(clanTag), data, c.warLogTTL).Err()
 }
 
 func warLogKey(clanTag string) string {
@@ -144,7 +154,7 @@ func (c *WarCache) GetCWLWar(ctx context.Context, warTag string) (cocapi.ClanWar
 	return resp, true, nil
 }
 
-func (c *WarCache) SetCWLWar(ctx context.Context, warTag string, resp cocapi.ClanWar, ttl time.Duration) error {
+func (c *WarCache) SetCWLWar(ctx context.Context, warTag string, resp cocapi.ClanWar) error {
 	if c == nil || c.client == nil {
 		return nil
 	}
@@ -152,7 +162,7 @@ func (c *WarCache) SetCWLWar(ctx context.Context, warTag string, resp cocapi.Cla
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, cwlWarKey(warTag), data, ttl).Err()
+	return c.client.Set(ctx, cwlWarKey(warTag), data, c.cwlWarTTL).Err()
 }
 
 func cwlWarKey(warTag string) string {

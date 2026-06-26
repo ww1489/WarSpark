@@ -13,12 +13,12 @@ import (
 )
 
 type fakeCapitalService struct {
-	raidSeasons   capital.CapitalRaidSeasonListResponse
-	capLeagues    capital.CapitalLeagueListResponse
-	capLeague     capital.CapitalLeague
+	raidSeasons    capital.CapitalRaidSeasonListResponse
+	capLeagues     capital.CapitalLeagueListResponse
+	capLeague      capital.CapitalLeague
 	builderLeagues capital.BuilderBaseLeagueListResponse
-	builderLeague capital.BuilderBaseLeague
-	err           error
+	builderLeague  capital.BuilderBaseLeague
+	err            error
 }
 
 func (f *fakeCapitalService) GetCapitalRaidSeasons(ctx context.Context, clanTag string) (capital.CapitalRaidSeasonListResponse, error) {

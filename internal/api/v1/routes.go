@@ -40,12 +40,10 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		APIToken: runtimeConfig.Config.CoC.APIToken,
 		Timeout:  runtimeConfig.Config.CoC.Timeout,
 	})
-	warCache := infraredis.NewWarCache(runtimeConfig.Redis)
+	warCache := infraredis.NewWarCache(runtimeConfig.Redis, runtimeConfig.Config.CoC.CurrentWarCacheTTL, runtimeConfig.Config.CoC.CWLGroupCacheTTL, 5*time.Minute, 5*time.Minute)
 	warService := service.NewWarService(warAPIClient, warRepository, service.WarServiceOptions{
-		Cache:              warCache,
-		CurrentWarCacheTTL: runtimeConfig.Config.CoC.CurrentWarCacheTTL,
-		CWLGroupCacheTTL:   runtimeConfig.Config.CoC.CWLGroupCacheTTL,
-		CocapiClient:       cocapiClient,
+		Cache:        warCache,
+		CocapiClient: cocapiClient,
 	})
 	warController := controller.NewWarController(warService)
 	clanCache := infraredis.NewClanCache(runtimeConfig.Redis)
@@ -104,6 +102,22 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 		api.GET("/leagues/:id/seasons/:season/tiers/:tier/history", leagueController.GetLeagueHistory)
 		api.GET("/war-leagues", leagueController.GetWarLeagues)
 		api.GET("/war-leagues/:id", leagueController.GetWarLeague)
+
+		capitalService := service.NewCapitalService(cocapiClient, infraredis.NewCapitalCache(runtimeConfig.Redis, 5*time.Minute, 30*time.Minute))
+		capitalController := controller.NewCapitalController(capitalService)
+		utilityService := service.NewUtilityService(cocapiClient, infraredis.NewUtilityCache(runtimeConfig.Redis, time.Hour))
+		utilityController := controller.NewUtilityController(utilityService)
+
+		api.GET("/clans/:tag/capital-raid-seasons", capitalController.GetCapitalRaidSeasons)
+		api.GET("/capital-leagues", capitalController.GetCapitalLeagues)
+		api.GET("/capital-leagues/:id", capitalController.GetCapitalLeague)
+		api.GET("/builder-base-leagues", capitalController.GetBuilderBaseLeagues)
+		api.GET("/builder-base-leagues/:id", capitalController.GetBuilderBaseLeague)
+		api.GET("/gold-pass/current", utilityController.GetCurrentGoldPass)
+		api.GET("/clans", utilityController.SearchClans)
+		api.GET("/locations/:id", utilityController.GetLocation)
+		api.POST("/players/:tag/verify-token", utilityController.VerifyPlayerToken)
+		api.GET("/players/:tag/league-group", utilityController.GetPlayerLeagueGroup)
 
 		admin := api.Group("/admin", authmw.Required(runtimeConfig.TokenManager))
 		{

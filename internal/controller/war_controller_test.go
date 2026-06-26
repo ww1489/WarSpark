@@ -116,16 +116,16 @@ type fakeWarService struct {
 	memberPagination utils.Pagination
 	members          wardomain.MemberListResult
 
-	warLogTag      string
-	warLogLimit    int
-	warLogAfter    string
-	warLogBefore   string
-	warLogResp     cocapi.ClanWarLogResponse
-	warLogErr      error
+	warLogTag    string
+	warLogLimit  int
+	warLogAfter  string
+	warLogBefore string
+	warLogResp   cocapi.ClanWarLogResponse
+	warLogErr    error
 
-	cwlWarTag   string
-	cwlWarResp  cocapi.ClanWar
-	cwlWarErr   error
+	cwlWarTag  string
+	cwlWarResp cocapi.ClanWar
+	cwlWarErr  error
 }
 
 func (f *fakeWarService) FetchCurrentWar(_ context.Context, clanTag string) (wardomain.Snapshot, error) {

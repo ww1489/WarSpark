@@ -120,8 +120,7 @@ func TestWarServiceFetchCurrentWarReturnsCachedSnapshot(t *testing.T) {
 	client := &fakeWarAPIClient{}
 	repository := &fakeWarRepository{}
 	service := NewWarService(client, repository, WarServiceOptions{
-		Cache:              cache,
-		CurrentWarCacheTTL: time.Minute,
+		Cache: cache,
 	})
 
 	result, err := service.FetchCurrentWar(context.Background(), "#aaa111")
@@ -162,8 +161,7 @@ func TestWarServiceFetchCurrentWarStoresSnapshotInCache(t *testing.T) {
 		snapshot: wardomain.Snapshot{ID: "war_123", ClanTag: "#AAA111", OpponentClanTag: "#BBB222", WarState: "inWar", FetchedAt: fetchedAt},
 	}
 	service := NewWarService(client, repository, WarServiceOptions{
-		Cache:              cache,
-		CurrentWarCacheTTL: time.Minute,
+		Cache: cache,
 	})
 	service.now = func() time.Time { return fetchedAt }
 
@@ -177,9 +175,6 @@ func TestWarServiceFetchCurrentWarStoresSnapshotInCache(t *testing.T) {
 	}
 	if cache.setTag != "#AAA111" || cache.setSnapshot.ID != "war_123" {
 		t.Fatalf("expected cached saved snapshot, got tag=%q snapshot=%#v", cache.setTag, cache.setSnapshot)
-	}
-	if cache.setTTL != time.Minute {
-		t.Fatalf("expected cache ttl 1m, got %s", cache.setTTL)
 	}
 }
 
@@ -228,11 +223,10 @@ type fakeWarCache struct {
 
 	setTag      string
 	setSnapshot wardomain.Snapshot
-	setTTL      time.Duration
 	setErr      error
 
-	warLogResp  cocapi.ClanWarLogResponse
-	cwlWarResp  cocapi.ClanWar
+	warLogResp cocapi.ClanWarLogResponse
+	cwlWarResp cocapi.ClanWar
 }
 
 func (f *fakeWarCache) GetCurrentWar(ctx context.Context, clanTag string) (wardomain.Snapshot, bool, error) {
@@ -240,10 +234,9 @@ func (f *fakeWarCache) GetCurrentWar(ctx context.Context, clanTag string) (wardo
 	return f.snapshot, f.getHit, f.getErr
 }
 
-func (f *fakeWarCache) SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot, ttl time.Duration) error {
+func (f *fakeWarCache) SetCurrentWar(ctx context.Context, clanTag string, snapshot wardomain.Snapshot) error {
 	f.setTag = clanTag
 	f.setSnapshot = snapshot
-	f.setTTL = ttl
 	return f.setErr
 }
 
@@ -251,7 +244,7 @@ func (f *fakeWarCache) GetCWLGroup(_ context.Context, clanTag string) (wardomain
 	return wardomain.CWLGroup{}, false, nil
 }
 
-func (f *fakeWarCache) SetCWLGroup(_ context.Context, clanTag string, group wardomain.CWLGroup, ttl time.Duration) error {
+func (f *fakeWarCache) SetCWLGroup(_ context.Context, clanTag string, group wardomain.CWLGroup) error {
 	return nil
 }
 
@@ -317,7 +310,7 @@ func (f *fakeWarCache) GetWarLog(_ context.Context, clanTag string) (cocapi.Clan
 	return f.warLogResp, f.getHit, f.getErr
 }
 
-func (f *fakeWarCache) SetWarLog(_ context.Context, clanTag string, resp cocapi.ClanWarLogResponse, ttl time.Duration) error {
+func (f *fakeWarCache) SetWarLog(_ context.Context, clanTag string, resp cocapi.ClanWarLogResponse) error {
 	return nil
 }
 
@@ -326,6 +319,6 @@ func (f *fakeWarCache) GetCWLWar(_ context.Context, warTag string) (cocapi.ClanW
 	return f.cwlWarResp, f.getHit, f.getErr
 }
 
-func (f *fakeWarCache) SetCWLWar(_ context.Context, warTag string, resp cocapi.ClanWar, ttl time.Duration) error {
+func (f *fakeWarCache) SetCWLWar(_ context.Context, warTag string, resp cocapi.ClanWar) error {
 	return nil
 }

@@ -207,7 +207,7 @@ func mapCocapiRankingError(err error, notFoundCode string) error {
 		if notFoundCode != "" {
 			return wardomain.NewError(notFoundCode, err.Error())
 		}
-		return wardomain.NewError(wardomain.ErrorWarNotFound, err.Error())
+		return err
 	case errors.Is(err, cocapi.ErrAPINotConfigured):
 		return wardomain.NewError(wardomain.ErrorAPINotConfigured, err.Error())
 	case errors.Is(err, cocapi.ErrAPIAccessDenied):

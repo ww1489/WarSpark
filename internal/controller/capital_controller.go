@@ -28,6 +28,17 @@ func NewCapitalController(service CapitalReader) *CapitalController {
 	return &CapitalController{service: service}
 }
 
+// GetCapitalRaidSeasons 获取部落都城突袭赛季数据。
+//
+// @Summary 获取都城突袭赛季
+// @Tags capital
+// @Produce json
+// @Param tag path string true "部落标签"
+// @Success 200 {object} utils.Response
+// @Failure 403 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/clans/{tag}/capital-raid-seasons [get]
 func (c *CapitalController) GetCapitalRaidSeasons(ctx *gin.Context) {
 	clanTag := ctx.Param("tag")
 	resp, err := c.service.GetCapitalRaidSeasons(ctx.Request.Context(), clanTag)
@@ -38,6 +49,16 @@ func (c *CapitalController) GetCapitalRaidSeasons(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetCapitalLeagues 获取都城联赛列表。
+//
+// @Summary 获取都城联赛列表
+// @Tags capital
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 403 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/capital-leagues [get]
 func (c *CapitalController) GetCapitalLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetCapitalLeagues(ctx.Request.Context())
 	if err != nil {
@@ -47,6 +68,17 @@ func (c *CapitalController) GetCapitalLeagues(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetCapitalLeague 获取都城联赛详情。
+//
+// @Summary 获取都城联赛详情
+// @Tags capital
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Success 200 {object} utils.Response
+// @Failure 403 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/capital-leagues/{id} [get]
 func (c *CapitalController) GetCapitalLeague(ctx *gin.Context) {
 	leagueID := ctx.Param("id")
 	resp, err := c.service.GetCapitalLeague(ctx.Request.Context(), leagueID)
@@ -57,6 +89,16 @@ func (c *CapitalController) GetCapitalLeague(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetBuilderBaseLeagues 获取夜世界联赛列表。
+//
+// @Summary 获取夜世界联赛列表
+// @Tags capital
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 403 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/builder-base-leagues [get]
 func (c *CapitalController) GetBuilderBaseLeagues(ctx *gin.Context) {
 	resp, err := c.service.GetBuilderBaseLeagues(ctx.Request.Context())
 	if err != nil {
@@ -66,6 +108,17 @@ func (c *CapitalController) GetBuilderBaseLeagues(ctx *gin.Context) {
 	utils.OK(ctx, resp)
 }
 
+// GetBuilderBaseLeague 获取夜世界联赛详情。
+//
+// @Summary 获取夜世界联赛详情
+// @Tags capital
+// @Produce json
+// @Param id path string true "联赛ID"
+// @Success 200 {object} utils.Response
+// @Failure 403 {object} utils.Response
+// @Failure 502 {object} utils.Response
+// @Failure 503 {object} utils.Response
+// @Router /api/v1/builder-base-leagues/{id} [get]
 func (c *CapitalController) GetBuilderBaseLeague(ctx *gin.Context) {
 	leagueID := ctx.Param("id")
 	resp, err := c.service.GetBuilderBaseLeague(ctx.Request.Context(), leagueID)
