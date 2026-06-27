@@ -506,7 +506,7 @@ type LeagueSeasonResult struct {
 	DefenseLosses  int  `json:"defenseLosses,omitempty"`
 	DefenseStars   int  `json:"defenseStars,omitempty"`
 	DefenseWins    int  `json:"defenseWins,omitempty"`
-	LeagueSeasonID long `json:"leagueSeasonId,omitempty"`
+	LeagueSeasonID Long `json:"leagueSeasonId,omitempty"`
 	LeagueTierID   int  `json:"leagueTierId,omitempty"`
 	LeagueTrophies int  `json:"leagueTrophies,omitempty"`
 	MaxBattles     int  `json:"maxBattles,omitempty"`
@@ -710,7 +710,7 @@ type Replay struct {
 
 // Resource 对应官方 definition Resource。
 type Resource struct {
-	Amount long   `json:"amount,omitempty"`
+	Amount Long   `json:"amount,omitempty"`
 	Name   string `json:"name,omitempty"`
 }
 
@@ -770,8 +770,8 @@ type WarStatus struct {
 
 type WarStatusList []WarStatus
 
-// long 官方规范未定义具体字段,按动态对象处理。
-type long map[string]any
+// long 是 Long 的别名，由代码生成器生成。
+type long = Long
 
 // LeagueTierListResponse 是 LeagueTierList 端点响应的包装(带分页)。
 // 官方规范把 LeagueTierList 定义为 array,但实际响应是 {items, paging} 对象。

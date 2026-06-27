@@ -12,6 +12,7 @@ import (
 func New(ctx context.Context, cfg appconfig.RedisConfig) (*goredis.Client, error) {
 	client := goredis.NewClient(&goredis.Options{
 		Addr:            fmt.Sprintf("%s:%s", cfg.Addr, cfg.Port),
+		Username:        cfg.User,
 		Password:        cfg.Password,
 		DB:              cfg.DB,
 		PoolSize:        cfg.PoolSize,

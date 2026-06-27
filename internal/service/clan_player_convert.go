@@ -31,6 +31,13 @@ func toDomainLeagueRef(league cocapi.League) clandomain.LeagueRef {
 	}
 }
 
+func toDomainLeagueRefFromBB(league cocapi.BuilderBaseLeague) clandomain.LeagueRef {
+	return clandomain.LeagueRef{
+		ID:   league.ID,
+		Name: string(league.Name),
+	}
+}
+
 func toDomainHeroLevels(heroes cocapi.PlayerItemLevelList) []clandomain.HeroLevel {
 	result := make([]clandomain.HeroLevel, 0, len(heroes))
 	for _, h := range heroes {
@@ -39,6 +46,21 @@ func toDomainHeroLevels(heroes cocapi.PlayerItemLevelList) []clandomain.HeroLeve
 			Level:    h.Level,
 			MaxLevel: h.MaxLevel,
 			Village:  h.Village,
+		})
+	}
+	return result
+}
+
+func toDomainTroopSpellLevels(items cocapi.PlayerItemLevelList) []clandomain.TroopSpellLevel {
+	result := make([]clandomain.TroopSpellLevel, 0, len(items))
+	for _, item := range items {
+		result = append(result, clandomain.TroopSpellLevel{
+			Name:             string(item.Name),
+			Level:            item.Level,
+			MaxLevel:         item.MaxLevel,
+			Village:          item.Village,
+			SuperTroopActive: item.SuperTroopIsActive,
+			Equipment:        toDomainHeroLevels(item.Equipment),
 		})
 	}
 	return result
@@ -57,4 +79,22 @@ func toDomainAchievements(achievements cocapi.PlayerAchievementProgressList) []c
 		})
 	}
 	return result
+}
+
+func toDomainLegendStatistics(ls cocapi.PlayerLegendStatistics) *clandomain.PlayerLegendStatistics {
+	return &clandomain.PlayerLegendStatistics{
+		LegendTrophies: ls.LegendTrophies,
+		BestSeason: clandomain.LegendSeasonResult{
+			Rank:     ls.BestSeason.Rank,
+			Trophies: ls.BestSeason.Trophies,
+		},
+		CurrentSeason: clandomain.LegendSeasonResult{
+			Rank:     ls.CurrentSeason.Rank,
+			Trophies: ls.CurrentSeason.Trophies,
+		},
+		PreviousSeason: clandomain.LegendSeasonResult{
+			Rank:     ls.PreviousSeason.Rank,
+			Trophies: ls.PreviousSeason.Trophies,
+		},
+	}
 }

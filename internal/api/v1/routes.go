@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -82,6 +83,15 @@ func SetupRoutes(router *gin.Engine, runtimeConfig appconfig.RuntimeConfig, imag
 
 		rankingService := service.NewRankingService(cocapiClient, infraredis.NewRankingCache(runtimeConfig.Redis, 10*time.Minute))
 		rankingController := controller.NewRankingController(rankingService)
+
+		// 预热缓存：异步获取默认地区排行数据
+		go func() {
+			ctx := context.Background()
+			rankingService.GetClanRanking(ctx, "32000017")
+			rankingService.GetPlayerRanking(ctx, "32000017")
+			rankingService.GetClanCapitalRanking(ctx, "32000017")
+		}()
+
 		leagueService := service.NewLeagueService(cocapiClient, infraredis.NewLeagueCache(runtimeConfig.Redis, 30*time.Minute))
 		leagueController := controller.NewLeagueController(leagueService)
 		labelService := service.NewLabelService(cocapiClient, infraredis.NewLabelCache(runtimeConfig.Redis, time.Hour))

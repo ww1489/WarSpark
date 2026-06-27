@@ -135,11 +135,8 @@ func (s *WarService) GetWarLog(ctx context.Context, clanTag string, limit int, a
 	if err != nil {
 		return cocapi.ClanWarLogResponse{}, err
 	}
-	if s.cache != nil {
-		resp, ok, err := s.cache.GetWarLog(ctx, normalizedTag)
-		if err == nil && ok {
-			return resp, nil
-		}
+	if s.capi == nil {
+		return cocapi.ClanWarLogResponse{}, dmerrors.New(dmerrors.ErrCodeAPINotConfigured, "cocapi client not configured")
 	}
 	resp, err := s.capi.GetClanWarLog(ctx, normalizedTag, cocapi.QueryGetClanWarLog{
 		Limit:  limit,
@@ -148,9 +145,6 @@ func (s *WarService) GetWarLog(ctx context.Context, clanTag string, limit int, a
 	})
 	if err != nil {
 		return cocapi.ClanWarLogResponse{}, mapCocapiErrorToWarError(err)
-	}
-	if s.cache != nil {
-		_ = s.cache.SetWarLog(ctx, normalizedTag, resp)
 	}
 	return resp, nil
 }

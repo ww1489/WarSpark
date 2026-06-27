@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #4361ee;
+  --color-primary-light: #7b8fff;
+  --color-primary-dark: #3a56d4;
+  --color-primary-bg: #eef1ff;
+  --color-accent: #f72585;
+  --color-accent-light: #ff9ecc;
+  --color-surface-page: #f5f6fa;
+  --color-surface-card: #ffffff;
+  --color-text-primary: #1e2130;
+  --color-text-secondary: #6e7191;
+  --color-text-muted: #9ca3b0;
+  --color-border: #e8eaf0;
+  --color-border-light: #f0f1f5;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --radius-btn: 10px;
+  --radius-card: 16px;
+  --radius-tag: 6px;
+  --shadow-card: 0 1px 4px rgba(30, 33, 48, 0.04), 0 4px 16px rgba(30, 33, 48, 0.04);
+  --shadow-card-hover: 0 2px 8px rgba(30, 33, 48, 0.06), 0 8px 24px rgba(67, 97, 238, 0.08);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+/* --- Utilities --- */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* --- Card --- */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* --- Table --- */
+.table-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+/* --- Rank badge --- */
+.rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.rank-2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); }
+.rank-3 { background: linear-gradient(135deg, #d97706, #b45309); }
+
+/* --- Zebra stripe --- */
+.row-even { background: var(--color-surface-page); }
+.row-hover:hover { background: var(--color-primary-bg); }
+
+/* --- Skeleton pulse --- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #e8eaf0 25%, #f0f1f5 50%, #e8eaf0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

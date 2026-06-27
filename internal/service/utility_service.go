@@ -101,7 +101,7 @@ func (s *UtilityService) GetPlayerLeagueGroup(ctx context.Context, playerTag str
 	if err != nil {
 		return utility.PlayerLeagueGroup{}, mapCocapiUtilityError(err, dmerrors.ErrCodePlayerNotFound)
 	}
-	if player.CurrentLeagueGroupTag == "" {
+	if player.CurrentLeagueGroupTag == "" || player.CurrentLeagueGroupTag == "#0" {
 		return utility.PlayerLeagueGroup{}, nil
 	}
 	lg, err := s.api.GetLeagueGroup(ctx, player.CurrentLeagueGroupTag, strconv.FormatInt(int64(player.CurrentLeagueSeasonID), 10), cocapi.QueryGetLeagueGroup{})
@@ -171,6 +171,6 @@ func mapCocapiUtilityError(err error, notFoundCode string) error {
 	case errors.Is(err, cocapi.ErrAPIResponseInvalid):
 		return dmerrors.New(dmerrors.ErrCodeAPIResponseInvalid, err.Error())
 	default:
-		return err
+		return dmerrors.New(dmerrors.ErrCodeAPIRequestFailed, err.Error())
 	}
 }

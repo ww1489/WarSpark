@@ -49,6 +49,7 @@ type PlayerRankingEntry struct {
 	AttackWins   int      `json:"attackWins,omitempty"`
 	DefenseWins  int      `json:"defenseWins,omitempty"`
 	Clan         *ClanRef `json:"clan,omitempty"`
+	LeagueTier   any      `json:"leagueTier,omitempty"`
 }
 
 type ClanRef struct {

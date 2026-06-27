@@ -72,6 +72,7 @@ type MySQLConfig struct {
 type RedisConfig struct {
 	Addr            string        `yaml:"addr"`
 	Port            string        `yaml:"port"`
+	User            string        `yaml:"user"`
 	Password        string        `yaml:"password"`
 	DB              int           `yaml:"db"`
 	PoolSize        int           `yaml:"pool_size"`

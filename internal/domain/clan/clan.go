@@ -36,26 +36,39 @@ type ClanMemberSummary struct {
 	Donations         int        `json:"donations"`
 	DonationsReceived int        `json:"donationsReceived"`
 	League            *LeagueRef `json:"league,omitempty"`
+	LeagueTier        any        `json:"leagueTier,omitempty"`
 }
 
 type PlayerOverview struct {
-	Tag                 string                `json:"tag"`
-	Name                string                `json:"name"`
-	TownHallLevel       int                   `json:"townHallLevel"`
-	TownHallWeaponLevel int                   `json:"townHallWeaponLevel,omitempty"`
-	ExpLevel            int                   `json:"expLevel"`
-	Role                string                `json:"role,omitempty"`
-	WarStars            int                   `json:"warStars,omitempty"`
-	AttackWins          int                   `json:"attackWins,omitempty"`
-	DefenseWins         int                   `json:"defenseWins,omitempty"`
-	Trophies            int                   `json:"trophies"`
-	BestTrophies        int                   `json:"bestTrophies,omitempty"`
-	WarPreference       string                `json:"warPreference,omitempty"`
-	Clan                *PlayerClanInfo       `json:"clan,omitempty"`
-	Heroes              []HeroLevel           `json:"heroes,omitempty"`
-	Achievements        []AchievementProgress `json:"achievements,omitempty"`
-	Labels              []Label               `json:"labels,omitempty"`
-	League              *LeagueRef            `json:"league,omitempty"`
+	Tag                      string                  `json:"tag"`
+	Name                     string                  `json:"name"`
+	TownHallLevel            int                     `json:"townHallLevel"`
+	TownHallWeaponLevel      int                     `json:"townHallWeaponLevel,omitempty"`
+	ExpLevel                 int                     `json:"expLevel"`
+	Role                     string                  `json:"role,omitempty"`
+	WarStars                 int                     `json:"warStars,omitempty"`
+	AttackWins               int                     `json:"attackWins,omitempty"`
+	DefenseWins              int                     `json:"defenseWins,omitempty"`
+	Trophies                 int                     `json:"trophies"`
+	BestTrophies             int                     `json:"bestTrophies,omitempty"`
+	WarPreference            string                  `json:"warPreference,omitempty"`
+	BuilderBaseTrophies      int                     `json:"builderBaseTrophies,omitempty"`
+	BestBuilderBaseTrophies  int                     `json:"bestBuilderBaseTrophies,omitempty"`
+	BuilderHallLevel         int                     `json:"builderHallLevel,omitempty"`
+	Donations                int                     `json:"donations,omitempty"`
+	DonationsReceived        int                     `json:"donationsReceived,omitempty"`
+	ClanCapitalContributions int                     `json:"clanCapitalContributions,omitempty"`
+	Clan                     *PlayerClanInfo         `json:"clan,omitempty"`
+	Heroes                   []HeroLevel             `json:"heroes,omitempty"`
+	HeroEquipment            []HeroLevel             `json:"heroEquipment,omitempty"`
+	Achievements             []AchievementProgress   `json:"achievements,omitempty"`
+	Labels                   []Label                 `json:"labels,omitempty"`
+	League                   *LeagueRef              `json:"league,omitempty"`
+	LeagueTier               any                     `json:"leagueTier,omitempty"`
+	BuilderBaseLeague        *LeagueRef              `json:"builderBaseLeague,omitempty"`
+	Troops                   []TroopSpellLevel       `json:"troops,omitempty"`
+	Spells                   []TroopSpellLevel       `json:"spells,omitempty"`
+	LegendStatistics         *PlayerLegendStatistics `json:"legendStatistics,omitempty"`
 }
 
 type PlayerClanInfo struct {
@@ -113,6 +126,27 @@ type Location struct {
 type LeagueRef struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+type TroopSpellLevel struct {
+	Name             string      `json:"name"`
+	Level            int         `json:"level"`
+	MaxLevel         int         `json:"maxLevel"`
+	Village          string      `json:"village,omitempty"`
+	SuperTroopActive bool        `json:"superTroopActive,omitempty"`
+	Equipment        []HeroLevel `json:"equipment,omitempty"`
+}
+
+type PlayerLegendStatistics struct {
+	LegendTrophies int                `json:"legendTrophies,omitempty"`
+	BestSeason     LegendSeasonResult `json:"bestSeason,omitempty"`
+	CurrentSeason  LegendSeasonResult `json:"currentSeason,omitempty"`
+	PreviousSeason LegendSeasonResult `json:"previousSeason,omitempty"`
+}
+
+type LegendSeasonResult struct {
+	Rank     int `json:"rank,omitempty"`
+	Trophies int `json:"trophies,omitempty"`
 }
 
 type Paging struct {

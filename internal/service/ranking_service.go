@@ -105,7 +105,7 @@ func (s *RankingService) GetPlayerRanking(ctx context.Context, locationID string
 	}
 	resp := ranking.PlayerRankingListResponse{Paging: toDomainRankingPaging(cocapiResp.Paging)}
 	for _, entry := range cocapiResp.Items {
-		item := ranking.PlayerRankingEntry{Tag: entry.Tag, Name: entry.Name, ExpLevel: entry.ExpLevel, Trophies: entry.Trophies, Rank: entry.Rank, PreviousRank: entry.PreviousRank, AttackWins: entry.AttackWins, DefenseWins: entry.DefenseWins}
+		item := ranking.PlayerRankingEntry{Tag: entry.Tag, Name: entry.Name, ExpLevel: entry.ExpLevel, Trophies: entry.Trophies, Rank: entry.Rank, PreviousRank: entry.PreviousRank, AttackWins: entry.AttackWins, DefenseWins: entry.DefenseWins, LeagueTier: entry.LeagueTier}
 		if entry.Clan.Tag != "" {
 			item.Clan = &ranking.ClanRef{Tag: entry.Clan.Tag, Name: entry.Clan.Name, BadgeURLs: entry.Clan.BadgeURLs}
 		}

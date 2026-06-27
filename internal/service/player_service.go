@@ -97,21 +97,38 @@ func (s *PlayerService) FetchBattleLog(ctx context.Context, playerTag string) (c
 
 func toDomainPlayerOverview(p cocapi.Player) clandomain.PlayerOverview {
 	overview := clandomain.PlayerOverview{
-		Tag:                 p.Tag,
-		Name:                p.Name,
-		TownHallLevel:       p.TownHallLevel,
-		TownHallWeaponLevel: p.TownHallWeaponLevel,
-		ExpLevel:            p.ExpLevel,
-		Role:                p.Role,
-		WarStars:            p.WarStars,
-		AttackWins:          p.AttackWins,
-		DefenseWins:         p.DefenseWins,
-		Trophies:            p.Trophies,
-		BestTrophies:        p.BestTrophies,
-		WarPreference:       p.WarPreference,
-		Labels:              toDomainLabels(p.Labels),
-		Heroes:              toDomainHeroLevels(p.Heroes),
-		Achievements:        toDomainAchievements(p.Achievements),
+		Tag:                      p.Tag,
+		Name:                     p.Name,
+		TownHallLevel:            p.TownHallLevel,
+		TownHallWeaponLevel:      p.TownHallWeaponLevel,
+		ExpLevel:                 p.ExpLevel,
+		Role:                     p.Role,
+		WarStars:                 p.WarStars,
+		AttackWins:               p.AttackWins,
+		DefenseWins:              p.DefenseWins,
+		Trophies:                 p.Trophies,
+		BestTrophies:             p.BestTrophies,
+		WarPreference:            p.WarPreference,
+		BuilderBaseTrophies:      p.BuilderBaseTrophies,
+		BestBuilderBaseTrophies:  p.BestBuilderBaseTrophies,
+		BuilderHallLevel:         p.BuilderHallLevel,
+		Donations:                p.Donations,
+		DonationsReceived:        p.DonationsReceived,
+		ClanCapitalContributions: p.ClanCapitalContributions,
+		Labels:                   toDomainLabels(p.Labels),
+		Heroes:                   toDomainHeroLevels(p.Heroes),
+		HeroEquipment:            toDomainHeroLevels(p.HeroEquipment),
+		Achievements:             toDomainAchievements(p.Achievements),
+		Troops:                   toDomainTroopSpellLevels(p.Troops),
+		Spells:                   toDomainTroopSpellLevels(p.Spells),
+		LeagueTier:               p.LeagueTier,
+	}
+	if p.BuilderBaseLeague.ID != 0 {
+		bb := toDomainLeagueRefFromBB(p.BuilderBaseLeague)
+		overview.BuilderBaseLeague = &bb
+	}
+	if p.LegendStatistics.LegendTrophies > 0 || p.LegendStatistics.BestSeason.Trophies > 0 {
+		overview.LegendStatistics = toDomainLegendStatistics(p.LegendStatistics)
 	}
 	if p.Clan.Tag != "" {
 		overview.Clan = &clandomain.PlayerClanInfo{

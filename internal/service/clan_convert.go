@@ -47,6 +47,7 @@ func toDomainClanMembers(members []cocapi.ClanMember) []clandomain.ClanMemberSum
 			ClanRank:          m.ClanRank,
 			Donations:         m.Donations,
 			DonationsReceived: m.DonationsReceived,
+			LeagueTier:        m.LeagueTier,
 		}
 		if m.League.ID != 0 {
 			league := toDomainLeagueRef(cocapi.League(m.League))

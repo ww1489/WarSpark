@@ -250,22 +250,16 @@ func (f *fakeWarCache) SetCWLGroup(_ context.Context, clanTag string, group ward
 }
 
 func TestWarServiceGetWarLog(t *testing.T) {
-	cache := &fakeWarCache{
-		getHit: true,
-	}
 	client := &fakeWarAPIClient{}
 	repository := &fakeWarRepository{}
-	service := NewWarService(client, repository, WarServiceOptions{
-		Cache: cache,
-	})
-	result, err := service.GetWarLog(context.Background(), "#AAA111", 10, "", "")
-	if err != nil {
-		t.Fatalf("GetWarLog returned error: %v", err)
+	service := NewWarService(client, repository)
+	_, err := service.GetWarLog(context.Background(), "#AAA111", 10, "", "")
+	if err == nil {
+		t.Fatal("expected error when cocapi client not configured")
 	}
-	if cache.getTag != "#AAA111" {
-		t.Fatalf("expected cache get for #AAA111, got %q", cache.getTag)
+	if got := dmerrors.Code(err); got != "api_not_configured" {
+		t.Fatalf("expected api_not_configured, got %q", got)
 	}
-	_ = result
 }
 
 func TestWarServiceGetWarLogInvalidTag(t *testing.T) {
