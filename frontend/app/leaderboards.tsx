@@ -105,7 +105,7 @@ function ClanTable({ data }: { data: ClanRankingEntry[] }) {
         { key: "badge", header: "", width: "52px", render: (r: ClanRankingEntry) => <ClanBadge url={r.badgeUrls.small} name={r.name} /> },
         { key: "name", header: "部落名称", width: "1fr", render: (r: ClanRankingEntry) => <NameLink tag={r.tag} name={r.name} /> },
         { key: "level", header: "等级", width: "52px", render: (r: ClanRankingEntry) => <span className="text-text-secondary">{r.clanLevel}</span> },
-        { key: "points", header: "积分", width: "80px", render: (r: ClanRankingEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanPoints)}</span> },
+        { key: "points", header: "奖杯", width: "80px", render: (r: ClanRankingEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanPoints)}</span> },
         { key: "members", header: "成员", width: "52px", render: (r: ClanRankingEntry) => <span className="text-text-secondary">{r.members}</span> },
         { key: "location", header: "地区", width: "100px", render: (r: ClanRankingEntry) => <span className="text-text-muted text-xs">{r.location?.name ?? "-"}</span> },
       ]}
@@ -152,7 +152,7 @@ function CapitalTable({ data }: { data: ClanCapitalEntry[] }) {
         { key: "badge", header: "", width: "52px", render: (r: ClanCapitalEntry) => <ClanBadge url={r.badgeUrls.small} name={r.name} /> },
         { key: "name", header: "部落名称", width: "1fr", render: (r: ClanCapitalEntry) => <NameLink tag={r.tag} name={r.name} /> },
         { key: "level", header: "等级", width: "52px", render: (r: ClanCapitalEntry) => <span className="text-text-secondary">{r.clanLevel}</span> },
-        { key: "capitalPoints", header: "都城积分", width: "88px", render: (r: ClanCapitalEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanCapitalPoints)}</span> },
+        { key: "capitalPoints", header: "都城奖杯", width: "88px", render: (r: ClanCapitalEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanCapitalPoints)}</span> },
         { key: "members", header: "成员", width: "52px", render: (r: ClanCapitalEntry) => <span className="text-text-secondary">{r.members}</span> },
         { key: "location", header: "地区", width: "100px", render: (r: ClanCapitalEntry) => <span className="text-text-muted text-xs">{r.location?.name ?? "-"}</span> },
       ]}
@@ -170,7 +170,7 @@ function BuilderClanTable({ data }: { data: ClanBuilderBaseEntry[] }) {
         { key: "badge", header: "", width: "52px", render: (r: ClanBuilderBaseEntry) => <ClanBadge url={r.badgeUrls.small} name={r.name} /> },
         { key: "name", header: "部落名称", width: "1fr", render: (r: ClanBuilderBaseEntry) => <NameLink tag={r.tag} name={r.name} /> },
         { key: "level", header: "等级", width: "52px", render: (r: ClanBuilderBaseEntry) => <span className="text-text-secondary">{r.clanLevel}</span> },
-        { key: "bbPoints", header: "夜世界积分", width: "96px", render: (r: ClanBuilderBaseEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanBuilderBasePoints)}</span> },
+        { key: "bbPoints", header: "夜世界奖杯", width: "96px", render: (r: ClanBuilderBaseEntry) => <span className="tabular-nums font-medium">{formatNumber(r.clanBuilderBasePoints)}</span> },
         { key: "members", header: "成员", width: "52px", render: (r: ClanBuilderBaseEntry) => <span className="text-text-secondary">{r.members}</span> },
         { key: "location", header: "地区", width: "100px", render: (r: ClanBuilderBaseEntry) => <span className="text-text-muted text-xs">{r.location?.name ?? "-"}</span> },
       ]}

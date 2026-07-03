@@ -12,6 +12,10 @@ import GoldPassPage from "./gold-pass";
 import AdminLayout from "./admin/__layout";
 import WarMonitorPage from "./admin/war";
 import CWLPage from "./admin/cwl";
+import FindLayoutPage from "./find-layout";
+import FindLayoutResultsPage from "./find-layout.results.$jobId";
+import LayoutDetailPage from "./layouts.$layoutId";
+import LeaguesPage from "./leagues";
 import "../styles/globals.css";
 
 const queryClient = new QueryClient({
@@ -29,10 +33,16 @@ const goldPassRoute = createRoute({ getParentRoute: () => rootRoute, path: "/gol
 const adminRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin", component: AdminLayout });
 const adminWarRoute = createRoute({ getParentRoute: () => adminRoute, path: "/war", component: WarMonitorPage });
 const adminCwlRoute = createRoute({ getParentRoute: () => adminRoute, path: "/cwl", component: CWLPage });
+const findLayoutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/find-layout", component: FindLayoutPage });
+const findLayoutResultsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/find-layout/results/$jobId", component: FindLayoutResultsPage });
+const layoutDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: "/layouts/$layoutId", component: LayoutDetailPage });
+const leaguesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/leagues", component: LeaguesPage });
 
 const routeTree = rootRoute.addChildren([
   indexRoute, clanRoute, playerRoute, leaderboardsRoute,
   searchRoute, goldPassRoute,
+  findLayoutRoute, findLayoutResultsRoute, layoutDetailRoute,
+  leaguesRoute,
   adminRoute.addChildren([adminWarRoute, adminCwlRoute]),
 ]);
 

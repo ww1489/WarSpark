@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getBattleLog,
   getCWLGroup,
+  getCWLWar,
   getCapitalRaidSeasons,
   getClan,
   getClanBuilderBaseRanking,
@@ -170,6 +171,15 @@ export function useCWLGroup(tag: string) {
     queryFn: () => getCWLGroup(tag),
     staleTime: 5 * 60 * 1000,
     enabled: !!tag,
+  });
+}
+
+export function useCWLWar(warTag: string) {
+  return useQuery({
+    queryKey: ["cwlWar", warTag],
+    queryFn: () => getCWLWar(warTag),
+    staleTime: 60_000,
+    enabled: !!warTag && warTag !== "#0",
   });
 }
 

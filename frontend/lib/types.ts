@@ -352,3 +352,76 @@ export interface ClanSearchParams {
   before?: string;
   labelIds?: string;
 }
+
+// === Image Search / Find Layout ===
+export interface ImageSearchJob {
+  job_id: string;
+  search_status: string;
+  detected_th?: number;
+  screenshot_quality?: string;
+  buildings_detected?: number;
+  error_code?: string;
+  error_message?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ImageSearchResults {
+  job: ImageSearchJob;
+  match_summary: { candidate_count: number; best_match_level?: string; low_confidence: boolean };
+  layouts: LayoutCard[];
+  attack_videos: VideoMatch[];
+  defense_replays: VideoMatch[];
+}
+
+export interface LayoutCard {
+  layout_id: string;
+  title: string;
+  th_level: number;
+  layout_type: string;
+  style_tags?: string[];
+  primary_image_url?: string;
+  source_type?: string;
+}
+
+export interface LayoutDetail {
+  layout_id: string;
+  title: string;
+  th_level: number;
+  layout_type: string;
+  style_tags?: string[];
+  source_type?: string;
+  source_url?: string;
+  images: LayoutImage[];
+  links: LayoutLink[];
+  attack_videos: VideoMatch[];
+  defense_replays: VideoMatch[];
+  similar_layouts: LayoutCard[];
+}
+
+export interface LayoutImage {
+  image_id: string;
+  image_url: string;
+  width?: number;
+  height?: number;
+  image_role: string;
+}
+
+export interface LayoutLink {
+  link_id: string;
+  link_type: string;
+  url: string;
+  link_status: string;
+}
+
+export interface VideoMatch {
+  match_id: string;
+  video_id: string;
+  youtube_video_id: string;
+  video_title: string;
+  channel_name?: string;
+  timestamp_seconds: number;
+  youtube_url: string;
+  match_group: string;
+  match_type: string;
+}
